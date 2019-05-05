@@ -2,10 +2,10 @@ use std::time::Duration;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-//use sdl2::rect::{Point, Rect};
-use sdl2::image::{self, LoadTexture, InitFlag};
+use sdl2::image::{self, InitFlag};
 
 mod board;
+mod texture;
 mod renderer;
 
 
@@ -19,15 +19,19 @@ fn main() -> Result<(), String> {
         .resizable()
         .build()
         .expect("could not initialize video subsystem");
-
-    let mut canvas = window.into_canvas().build()
+        
+    let mut canvas = window
+        .into_canvas()
+        .present_vsync()
+        .build()
         .expect("could not make a canvas");
-    let texture_creator = canvas.texture_creator();
+    let creator = canvas.texture_creator();
 
-    let textures = [
-        texture_creator.load_texture("assets/all.png")?
-    ];
-
+    let mut draw_ctx = texture::DrawContext::new(&mut canvas, &creator);
+    draw_ctx.load_static()?;
+    
+    let mut renderer = renderer::Renderer::new(draw_ctx);
+    
     let board = board::Board::new();
 
     let mut event_pump = sdl_context.event_pump()?;
@@ -42,7 +46,7 @@ fn main() -> Result<(), String> {
             }
         }
 
-        renderer::render(&mut canvas, &textures, &board)?;
+        renderer.render(&board)?;
 
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 20));
     }
