@@ -5,10 +5,7 @@ pub struct Board{
 
 
 impl Board {
-    pub fn new() -> Board {
-        Board {
-            rows: 8,
-            columns: 16,
-        }
+    pub fn new_custom(rows: u16, columns: u16) -> Board {
+        Board { rows, columns }
     }
 }

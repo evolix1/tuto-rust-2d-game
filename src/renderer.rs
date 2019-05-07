@@ -2,7 +2,7 @@ use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 use sdl2::render::{Canvas, Texture};
 
-use crate::board::Board;
+use crate::world::GameWorld;
 use crate::texture::{DrawContext, SpriteId};
 
 
@@ -30,9 +30,9 @@ impl<'a> Renderer<'a> {
     }
 
     
-    pub fn render(&mut self, board: &Board) -> Result<(), String> 
+    pub fn render(&mut self, world: &GameWorld) -> Result<(), String> 
     {
-        self.prepare(board)?;
+        self.prepare(world)?;
 
         self.render_all()?;
 
@@ -42,12 +42,12 @@ impl<'a> Renderer<'a> {
     }
 
     
-    pub fn prepare(&mut self, board: &Board) -> Result<(), String> {
+    pub fn prepare(&mut self, world: &GameWorld) -> Result<(), String> {
         self.draw_ctx.canvas.set_draw_color(self.background_color);
         self.draw_ctx.canvas.clear();
 
         if !self.draw_ctx.sprites.contains_key(&SpriteId::DefaultBoard) {
-            self.init_board(board)?;
+            self.init_board(world)?;
         }
 
         Ok(())
@@ -104,14 +104,14 @@ impl<'a> Renderer<'a> {
     }
 
 
-    fn init_board(&mut self, board: &Board) -> Result<(), String> {
+    fn init_board(&mut self, world: &GameWorld) -> Result<(), String> {
         let board_cell = self.draw_ctx.sprites
             .get(&SpriteId::BoardCell)
             .expect("board cell sprite exists");
 
         let format = self.draw_ctx.textures[board_cell.texture_id].query().format;
-        let width = board_cell.geom.width() * board.columns as u32;
-        let height = board_cell.geom.height() * board.rows as u32;
+        let width = board_cell.geom.width() * world.board.columns as u32;
+        let height = board_cell.geom.height() * world.board.rows as u32;
         
         // Create the texture
         let mut board_texture = self.draw_ctx.creator
@@ -126,7 +126,7 @@ impl<'a> Renderer<'a> {
         canvas.with_texture_canvas(
             &mut board_texture,
             |texture_canvas| { 
-                draw_err = Self::draw_board(texture_canvas, &tile_texture, board);
+                draw_err = Self::draw_board(texture_canvas, &tile_texture, world);
             })
             .map_err(|err| format!("{:?}", err))?;
         // re-raise error of draw
@@ -147,7 +147,7 @@ impl<'a> Renderer<'a> {
     fn draw_board<T>(
         canvas: &mut Canvas<T>,
         texture: &Texture,
-        board: &Board,
+        world: &GameWorld,
         ) -> Result<(), String> 
         where T: sdl2::render::RenderTarget
         {
@@ -157,13 +157,13 @@ impl<'a> Renderer<'a> {
 
             let tile_geom = Rect::new(0, 0, 32, 32);
 
-            for y in 0..board.rows {
-                for x in 0..board.columns {
-                    let px = ((x as f32 / board.columns as f32) * width).floor();
-                    let py = ((y as f32 / board.rows as f32) * height).floor();
+            for y in 0..world.board.rows {
+                for x in 0..world.board.columns {
+                    let px = ((x as f32 / world.board.columns as f32) * width).floor();
+                    let py = ((y as f32 / world.board.rows as f32) * height).floor();
 
-                    let next_x = (((x as f32 + 1f32) / board.columns as f32) * width).floor();
-                    let next_y = (((y as f32 + 1f32) / board.rows as f32) * height).floor();
+                    let next_x = (((x as f32 + 1f32) / world.board.columns as f32) * width).floor();
+                    let next_y = (((y as f32 + 1f32) / world.board.rows as f32) * height).floor();
 
                     let tile_screen = Rect::new(
                         px as i32, 

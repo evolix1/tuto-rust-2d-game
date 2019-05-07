@@ -5,6 +5,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::image::{self, InitFlag};
 
 mod board;
+mod world;
 mod texture;
 mod renderer;
 
@@ -32,7 +33,7 @@ fn main() -> Result<(), String> {
     
     let mut renderer = renderer::Renderer::new(draw_ctx);
     
-    let board = board::Board::new();
+    let world = world::GameWorld::new();
 
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
@@ -46,7 +47,7 @@ fn main() -> Result<(), String> {
             }
         }
 
-        renderer.render(&board)?;
+        renderer.render(&world)?;
 
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 20));
     }
