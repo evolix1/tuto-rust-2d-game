@@ -8,10 +8,11 @@ use crate::texture::{DrawContext, Sprite, SpriteId};
 
 #[allow(dead_code)]
 pub enum AspectRatio {
-    /// Dimensions are scaled to fit the container
+    /// Dimensions are scaled to fit the container, ratio is not preserved
     Stretch,    
     /// Preserve ratio, and make it fit inside the container
     KeepIn,     
+    // NOTE: missing 3rd options, that overflow its container
 }
 
 
@@ -30,14 +31,10 @@ impl<'a> Renderer<'a> {
     }
 
     
-    pub fn render(&mut self, world: &GameWorld) -> Result<(), String> 
-    {
+    pub fn render(&mut self, world: &GameWorld) -> Result<(), String> {
         self.prepare(world)?;
-
         self.render_all(world)?;
-
         self.draw_ctx.canvas.present();
-
         Ok(())
     }
 
@@ -46,6 +43,7 @@ impl<'a> Renderer<'a> {
         self.draw_ctx.canvas.set_draw_color(self.background_color);
         self.draw_ctx.canvas.clear();
 
+        // Initialise the first time only
         if !self.draw_ctx.sprites.contains_key(&SpriteId::DefaultBoard) {
             self.init_board(world)?;
         }
@@ -62,8 +60,10 @@ impl<'a> Renderer<'a> {
         let (width, height) = self.draw_ctx.canvas.output_size()?;
         let geom = Rect::new(10, 10, width - 20, height - 20);
 
+        // First, draw background
         let board_rect = self.paint_sprite(&SpriteId::DefaultBoard, geom, AspectRatio::KeepIn)?;
 
+        // Then, draw robots
         for robot in world.robots.iter() {
             let pos = match robot.pos.as_ref() {
                 Some(p) => p,
@@ -91,6 +91,7 @@ impl<'a> Renderer<'a> {
 
 
     // Private API below
+    
     fn paint_sprite(
         &mut self, 
         id: &SpriteId, 
@@ -196,10 +197,7 @@ impl<'a> Renderer<'a> {
                         (next_x - px) as u32, 
                         (next_y - py) as u32);
 
-                    canvas.copy(
-                        texture, 
-                        sprite.geom, 
-                        tile_screen)?;
+                    canvas.copy(texture, sprite.geom, tile_screen)?;
                 }
             }
 
