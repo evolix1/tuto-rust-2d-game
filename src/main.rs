@@ -4,8 +4,13 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::image::{self, InitFlag};
 
+// Game & Entities related
+mod positionning;
 mod board;
 mod world;
+mod robot;
+
+// Draw related
 mod texture;
 mod renderer;
 
@@ -33,7 +38,8 @@ fn main() -> Result<(), String> {
     
     let mut renderer = renderer::Renderer::new(draw_ctx);
     
-    let world = world::GameWorld::new();
+    let mut world = world::GameWorld::new();
+    world.robots[1].pos = Some(positionning::Pos::new(1u16, 4u16));
 
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {

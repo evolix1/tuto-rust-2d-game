@@ -34,7 +34,7 @@ impl<'a> Renderer<'a> {
     {
         self.prepare(world)?;
 
-        self.render_all()?;
+        self.render_all(world)?;
 
         self.draw_ctx.canvas.present();
 
@@ -57,13 +57,34 @@ impl<'a> Renderer<'a> {
     /**
      * Render all game items.
      */
-    pub fn render_all(&mut self) -> Result<(), String> 
+    pub fn render_all(&mut self, world: &GameWorld) -> Result<(), String> 
     {
         let (width, height) = self.draw_ctx.canvas.output_size()?;
         let geom = Rect::new(10, 10, width - 20, height - 20);
 
-        //let paint_rect = Self::keepAspectRatio(screen_rect, sprite.geom);
-        self.paint_sprite(&SpriteId::DefaultBoard, geom, AspectRatio::KeepIn)?;
+        let board_rect = self.paint_sprite(&SpriteId::DefaultBoard, geom, AspectRatio::KeepIn)?;
+
+        for robot in world.robots.iter() {
+            let pos = match robot.pos.as_ref() {
+                Some(p) => p,
+                None => continue
+            };
+                
+            let x = pos.x as f32 * board_rect.width() as f32 / world.board.columns as f32;
+            let y = pos.y as f32 * board_rect.height() as f32 / world.board.rows as f32;
+
+            let screen_rect = Rect::new(
+                board_rect.x() + x.floor() as i32,
+                board_rect.y() + y.floor() as i32,
+                (board_rect.width() as f32 / world.board.columns as f32).floor() as u32,
+                (board_rect.height() as f32 / world.board.rows as f32).floor() as u32,
+                );
+        
+            let _ = self.paint_sprite(
+                &SpriteId::Robot(robot.id.clone()), 
+                screen_rect, 
+                AspectRatio::Stretch)?;
+        }
 
         Ok(())
     }
@@ -75,7 +96,7 @@ impl<'a> Renderer<'a> {
         id: &SpriteId, 
         area: Rect,
         aspect: AspectRatio
-        ) -> Result<(), String> {
+        ) -> Result<Rect, String> {
         let sprite = self.draw_ctx.sprites.get(id)
             .ok_or_else(|| format!("missing sprite"))?;
         
@@ -100,7 +121,8 @@ impl<'a> Renderer<'a> {
         };
         
         self.draw_ctx.canvas.copy(texture, sprite.geom, display_geom)?;
-        Ok(())
+        
+        Ok(display_geom)
     }
 
 

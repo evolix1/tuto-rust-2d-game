@@ -5,6 +5,8 @@ use sdl2::render::{Texture, Canvas, TextureCreator};
 use sdl2::video::{Window, WindowContext};
 use sdl2::image::{LoadTexture};
 
+use crate::robot::RobotId;
+
 
 pub struct DrawContext<'a> {
     pub canvas: &'a mut Canvas<Window>,
@@ -31,10 +33,26 @@ impl<'a> DrawContext<'a> {
         self.textures = vec![
             self.creator.load_texture("assets/all.png")?,
         ];
+
+        let side = self.textures[0].query().height;
         
         self.sprites.insert(
             SpriteId::BoardCell,
-            Sprite { texture_id: 0, geom: Rect::new(0, 0, 32, 32) });
+            Sprite { texture_id: 0, geom: Rect::new(0, 0, side, side) });
+        
+        // Robots
+        self.sprites.insert(
+            SpriteId::Robot(RobotId::Blue),
+            Sprite { texture_id: 0, geom: Rect::new(1 * side as i32, 0, side, side) });
+        self.sprites.insert(
+            SpriteId::Robot(RobotId::Green),
+            Sprite { texture_id: 0, geom: Rect::new(2 * side as i32, 0, side, side) });
+        self.sprites.insert(
+            SpriteId::Robot(RobotId::Yellow),
+            Sprite { texture_id: 0, geom: Rect::new(3 * side as i32, 0, side, side) });
+        self.sprites.insert(
+            SpriteId::Robot(RobotId::Red),
+            Sprite { texture_id: 0, geom: Rect::new(4 * side as i32, 0, side, side) });
         
         Ok(())
     }
@@ -60,9 +78,12 @@ impl<'a> DrawContext<'a> {
 
 #[derive(PartialEq, Eq, Hash)]
 pub enum SpriteId {
+    // Board management
     BoardCell,
     SizedBoard { width: u32, height: u32 },
     DefaultBoard,
+    //
+    Robot(RobotId),
 }
 
 #[derive(Clone)]
