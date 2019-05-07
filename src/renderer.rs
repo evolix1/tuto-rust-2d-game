@@ -3,7 +3,7 @@ use sdl2::pixels::Color;
 use sdl2::render::{Canvas, Texture};
 
 use crate::world::GameWorld;
-use crate::texture::{DrawContext, SpriteId};
+use crate::texture::{DrawContext, Sprite, SpriteId};
 
 
 #[allow(dead_code)]
@@ -148,7 +148,11 @@ impl<'a> Renderer<'a> {
         canvas.with_texture_canvas(
             &mut board_texture,
             |texture_canvas| { 
-                draw_err = Self::draw_board(texture_canvas, &tile_texture, world);
+                draw_err = Self::draw_board(
+                    texture_canvas, 
+                    &tile_texture, 
+                    &board_cell,
+                    world);
             })
             .map_err(|err| format!("{:?}", err))?;
         // re-raise error of draw
@@ -169,6 +173,7 @@ impl<'a> Renderer<'a> {
     fn draw_board<T>(
         canvas: &mut Canvas<T>,
         texture: &Texture,
+        sprite: &Sprite,
         world: &GameWorld,
         ) -> Result<(), String> 
         where T: sdl2::render::RenderTarget
@@ -176,8 +181,6 @@ impl<'a> Renderer<'a> {
             let (width, height) = canvas.output_size()?;
             let width = width as f32;
             let height = height as f32;
-
-            let tile_geom = Rect::new(0, 0, 32, 32);
 
             for y in 0..world.board.rows {
                 for x in 0..world.board.columns {
@@ -195,7 +198,7 @@ impl<'a> Renderer<'a> {
 
                     canvas.copy(
                         texture, 
-                        tile_geom, 
+                        sprite.geom, 
                         tile_screen)?;
                 }
             }
