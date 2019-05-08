@@ -1,9 +1,11 @@
+use std::path::Path;
 use std::collections::HashMap;
 
 use sdl2::rect::{Rect};
+use sdl2::surface::{Surface};
 use sdl2::render::{Texture, Canvas, TextureCreator};
 use sdl2::video::{Window, WindowContext};
-use sdl2::image::{LoadTexture};
+use sdl2::image::{LoadSurface};
 
 use crate::robot::RobotId;
 
@@ -11,6 +13,7 @@ use crate::robot::RobotId;
 pub struct DrawContext<'a> {
     pub canvas: &'a mut Canvas<Window>,
     pub creator: &'a TextureCreator<WindowContext>,
+    pub surfaces: Vec<Surface<'a>>,
     pub textures: Vec<Texture<'a>>,
     pub sprites: HashMap<SpriteId, Sprite>,
 }
@@ -24,14 +27,20 @@ impl<'a> DrawContext<'a> {
         DrawContext {
             canvas,
             creator,
+            surfaces: Vec::new(),
             textures: Vec::new(),
             sprites: HashMap::new(),
         }
     }
 
     pub fn load_static(&mut self) -> Result<(), String> {
+        self.surfaces = vec![
+            Surface::from_file(&Path::new("assets/all.svg"))?,
+        ];
+        
         self.textures = vec![
-            self.creator.load_texture("assets/all.png")?,
+            self.creator.create_texture_from_surface(&self.surfaces[0])
+                .map_err(|e| format!("{:?}", e))?,
         ];
 
         let side = self.textures[0].query().height;
