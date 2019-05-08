@@ -137,9 +137,7 @@ impl<'a> Renderer<'a> {
         let height = board_cell.geom.height() * world.board.rows as u32;
         
         // Create the texture
-        let mut board_texture = self.draw_ctx.creator
-            .create_texture_target(format, width, height)
-            .map_err(|err| format!("{:?}", err))?;
+        let mut board_texture = self.draw_ctx.create_texture(format, width, height)?;
 
         // Render the texture
         let canvas = &mut self.draw_ctx.canvas;

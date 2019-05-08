@@ -6,13 +6,14 @@ use sdl2::surface::{Surface};
 use sdl2::render::{Texture, Canvas, TextureCreator};
 use sdl2::video::{Window, WindowContext};
 use sdl2::image::{LoadSurface};
+use sdl2::pixels::{PixelFormatEnum};
 
 use crate::robot::RobotId;
 
 
 pub struct DrawContext<'a> {
     pub canvas: &'a mut Canvas<Window>,
-    pub creator: &'a TextureCreator<WindowContext>,
+    creator: &'a TextureCreator<WindowContext>,
     pub surfaces: Vec<Surface<'a>>,
     pub textures: Vec<Texture<'a>>,
     pub sprites: HashMap<SpriteId, Sprite>,
@@ -64,6 +65,15 @@ impl<'a> DrawContext<'a> {
             Sprite { texture_id: 0, geom: Rect::new(4 * side as i32, 0, side, side) });
         
         Ok(())
+    }
+
+    pub fn create_texture<F>(&self, format: F, width: u32, height: u32) 
+        -> Result<Texture<'a>, String> 
+        where F: Into<Option<PixelFormatEnum>>
+    {
+        self.creator
+            .create_texture_target(format, width, height)
+            .map_err(|err| format!("{:?}", err))
     }
 
     pub fn add_sprite_from_texture(&mut self, texture: Texture<'a>, id: SpriteId) -> Sprite {
