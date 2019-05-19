@@ -33,7 +33,7 @@ pub enum SpriteId {
 
 #[derive(Clone)]
 pub struct Sprite {
-    pub texture_id: usize,
+    pub texture_index: usize,
     pub geom: Rect
 }
 
@@ -66,21 +66,21 @@ impl<'a> DrawContext<'a> {
         
         self.sprites.insert(
             SpriteId::BoardCell,
-            Sprite { texture_id: 0, geom: Rect::new(0, 0, side, side) });
+            Sprite { texture_index: 0, geom: Rect::new(0, 0, side, side) });
         
         // Robots
         self.sprites.insert(
             SpriteId::Robot(RobotId::Blue),
-            Sprite { texture_id: 0, geom: Rect::new(1 * side as i32, 0, side, side) });
+            Sprite { texture_index: 0, geom: Rect::new(1 * side as i32, 0, side, side) });
         self.sprites.insert(
             SpriteId::Robot(RobotId::Green),
-            Sprite { texture_id: 0, geom: Rect::new(2 * side as i32, 0, side, side) });
+            Sprite { texture_index: 0, geom: Rect::new(2 * side as i32, 0, side, side) });
         self.sprites.insert(
             SpriteId::Robot(RobotId::Yellow),
-            Sprite { texture_id: 0, geom: Rect::new(3 * side as i32, 0, side, side) });
+            Sprite { texture_index: 0, geom: Rect::new(3 * side as i32, 0, side, side) });
         self.sprites.insert(
             SpriteId::Robot(RobotId::Red),
-            Sprite { texture_id: 0, geom: Rect::new(4 * side as i32, 0, side, side) });
+            Sprite { texture_index: 0, geom: Rect::new(4 * side as i32, 0, side, side) });
         
         Ok(())
     }
@@ -98,9 +98,9 @@ impl<'a> DrawContext<'a> {
         let info = texture.query();
         let geom = Rect::new(0, 0, info.width, info.height);
         
-        let texture_id = self.add_texture(texture);
+        let texture_index = self.add_texture(texture);
         
-        let sprite = Sprite { texture_id, geom };
+        let sprite = Sprite { texture_index, geom };
         self.sprites.insert(id, sprite.clone());
         
         sprite

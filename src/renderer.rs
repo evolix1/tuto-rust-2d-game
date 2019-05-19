@@ -101,7 +101,7 @@ impl<'a> Renderer<'a> {
         let sprite = self.draw_ctx.sprites.get(id)
             .ok_or_else(|| format!("missing sprite"))?;
         
-        let texture = &self.draw_ctx.textures[sprite.texture_id];
+        let texture = &self.draw_ctx.textures[sprite.texture_index];
         
         let display_geom = match aspect {
             AspectRatio::Stretch => area,
@@ -132,7 +132,7 @@ impl<'a> Renderer<'a> {
             .get(&SpriteId::BoardCell)
             .expect("board cell sprite exists");
 
-        let format = self.draw_ctx.textures[board_cell.texture_id].query().format;
+        let format = self.draw_ctx.textures[board_cell.texture_index].query().format;
         let width = board_cell.geom.width() * world.board.columns as u32;
         let height = board_cell.geom.height() * world.board.rows as u32;
         
@@ -141,7 +141,7 @@ impl<'a> Renderer<'a> {
 
         // Render the texture
         let canvas = &mut self.draw_ctx.canvas;
-        let tile_texture = &self.draw_ctx.textures[board_cell.texture_id];
+        let tile_texture = &self.draw_ctx.textures[board_cell.texture_index];
 
         let mut draw_err = Ok(());
         canvas.with_texture_canvas(
