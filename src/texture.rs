@@ -110,4 +110,8 @@ impl<'a> DrawContext<'a> {
         self.textures.push(texture);
         self.textures.len() - 1
     }
+
+    pub fn sprite_exists(&self, id: &SpriteId) -> bool {
+        self.sprites.contains_key(id)
+    }
 }

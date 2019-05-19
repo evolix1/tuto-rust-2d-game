@@ -44,7 +44,7 @@ impl<'a> Renderer<'a> {
         self.draw_ctx.canvas.clear();
 
         // Initialise the first time only
-        if !self.draw_ctx.sprites.contains_key(&SpriteId::DefaultBoard) {
+        if !self.draw_ctx.sprite_exists(&SpriteId::DefaultBoard) {
             self.init_board(world)?;
         }
 
