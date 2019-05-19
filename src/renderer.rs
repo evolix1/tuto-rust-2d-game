@@ -18,14 +18,14 @@ pub enum AspectRatio {
 }
 
 
-pub struct Renderer<'a> {
+pub struct Renderer<'r> {
     background_color: Color,
-    draw_ctx: DrawContext<'a, 'a>,
+    draw_ctx: DrawContext<'r, 'r>,
 }
 
 
-impl<'a> Renderer<'a> {
-    pub fn new(draw_ctx: DrawContext<'a, 'a>) -> Renderer<'a> {
+impl<'r> Renderer<'r> {
+    pub fn new(draw_ctx: DrawContext<'r, 'r>) -> Renderer<'r> {
         Renderer {
             background_color: Color::RGB(220, 10, 10),
             draw_ctx,
@@ -152,8 +152,8 @@ impl<'a> Renderer<'a> {
     }
 
 
-    fn draw_board<'b, 'c>(
-        draw_ctx: &mut DrawContext<'b, 'c>,
+    fn draw_board<'c, 't>(
+        draw_ctx: &mut DrawContext<'c, 't>,
         id: SpriteId,
         world: &GameWorld,
         ) -> Result<(), String> 

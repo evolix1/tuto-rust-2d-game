@@ -82,6 +82,7 @@ impl<'c, 't> DrawContext<'c, 't> {
         
         let mut draw_result = Ok(());
         let reuse_tm = self.tm.clone();
+        
         self.canvas.with_texture_canvas(
             &mut texture,
             |texture_canvas| { 
@@ -162,7 +163,7 @@ impl<'t> TextureManager<'t> {
             .map_err(|err| format!("{:?}", err))
     }
 
-    // Sprite management
+    // Sprite management below
     
     pub fn get_sprite(&self, id: &SpriteId) -> Result<&Sprite, String> {
         self.sprites.get(id)
