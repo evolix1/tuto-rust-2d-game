@@ -20,6 +20,24 @@ pub struct DrawContext<'a> {
 }
 
 
+#[derive(PartialEq, Eq, Hash)]
+pub enum SpriteId {
+    // Board management
+    BoardCell,
+    SizedBoard { width: u32, height: u32 },
+    DefaultBoard,
+    //
+    Robot(RobotId),
+}
+
+
+#[derive(Clone)]
+pub struct Sprite {
+    pub texture_id: usize,
+    pub geom: Rect
+}
+
+
 impl<'a> DrawContext<'a> {
     pub fn new(
         canvas: &'a mut Canvas<Window>,
@@ -92,21 +110,4 @@ impl<'a> DrawContext<'a> {
         self.textures.push(texture);
         self.textures.len() - 1
     }
-}
-
-
-#[derive(PartialEq, Eq, Hash)]
-pub enum SpriteId {
-    // Board management
-    BoardCell,
-    SizedBoard { width: u32, height: u32 },
-    DefaultBoard,
-    //
-    Robot(RobotId),
-}
-
-#[derive(Clone)]
-pub struct Sprite {
-    pub texture_id: usize,
-    pub geom: Rect
 }
