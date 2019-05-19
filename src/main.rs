@@ -52,6 +52,18 @@ fn main() -> Result<(), String> {
                 Event::KeyDown { keycode: Some(Keycode::R), repeat: false, .. } => {
                     world.reset_rand_pos();
                 },
+                Event::KeyDown { keycode: Some(Keycode::Up), repeat: false, .. } => {
+                    world.move_robot(robot::RobotId::Red, positionning::Way::Up)?;
+                },
+                Event::KeyDown { keycode: Some(Keycode::Down), repeat: false, .. } => {
+                    world.move_robot(robot::RobotId::Red, positionning::Way::Down)?;
+                },
+                Event::KeyDown { keycode: Some(Keycode::Left), repeat: false, .. } => {
+                    world.move_robot(robot::RobotId::Red, positionning::Way::Left)?;
+                },
+                Event::KeyDown { keycode: Some(Keycode::Right), repeat: false, .. } => {
+                    world.move_robot(robot::RobotId::Red, positionning::Way::Right)?;
+                },
                 _ => {}
             }
         }
