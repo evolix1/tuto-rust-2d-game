@@ -39,7 +39,6 @@ fn main() -> Result<(), String> {
     let mut renderer = renderer::Renderer::new(draw_ctx);
     
     let mut world = world::GameWorld::new();
-    //world.reset_default_pos();
     world.reset_rand_pos();
 
     let mut event_pump = sdl_context.event_pump()?;
@@ -49,6 +48,9 @@ fn main() -> Result<(), String> {
                 Event::Quit { .. }
                 | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running
+                },
+                Event::KeyDown { keycode: Some(Keycode::R), repeat: false, .. } => {
+                    world.reset_rand_pos();
                 },
                 _ => {}
             }
