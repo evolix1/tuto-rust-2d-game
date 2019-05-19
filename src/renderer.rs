@@ -126,11 +126,10 @@ impl<'a> Renderer<'a> {
 
     fn init_board(&mut self, world: &GameWorld) -> Result<(), String> {
         let mut tm = self.draw_ctx.tm.borrow_mut();
-        let board_cell = tm.sprites
-            .get(&SpriteId::BoardCell)
-            .expect("board cell sprite exists");
+        
+        let board_cell = tm.get_sprite(&SpriteId::BoardCell)?;
 
-        let format = tm.textures[board_cell.texture_index].query().format;
+        let format = tm.get_texture(board_cell)?.query().format;
         let width = board_cell.geom.width() * world.board.columns as u32;
         let height = board_cell.geom.height() * world.board.rows as u32;
         
@@ -139,7 +138,7 @@ impl<'a> Renderer<'a> {
 
         // Render the texture
         let canvas = &mut self.draw_ctx.canvas;
-        let tile_texture = &tm.textures[board_cell.texture_index];
+        let tile_texture = &tm.get_texture(board_cell)?;
 
         let mut draw_err = Ok(());
         canvas.with_texture_canvas(
@@ -161,7 +160,7 @@ impl<'a> Renderer<'a> {
             SpriteId::SizedBoard{ width, height });
         
         // Remember this sprite for being the default board sprite
-        tm.sprites.insert(SpriteId::DefaultBoard, board);
+        tm.set_sprite(SpriteId::DefaultBoard, board);
 
         Ok(())
     }

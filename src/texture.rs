@@ -23,9 +23,9 @@ pub struct DrawContext<'d> {
 
 pub struct TextureManager<'t> {
     creator: &'t TextureCreator<WindowContext>,
-    pub surfaces: Vec<Surface<'t>>,
-    pub textures: Vec<Texture<'t>>,
-    pub sprites: HashMap<SpriteId, Sprite>,
+    surfaces: Vec<Surface<'t>>,
+    textures: Vec<Texture<'t>>,
+    sprites: HashMap<SpriteId, Sprite>,
 }
 
 
@@ -131,6 +131,10 @@ impl<'t> TextureManager<'t> {
         self.sprites.insert(id, sprite.clone());
         
         sprite
+    }
+    
+    pub fn set_sprite(&mut self, id: SpriteId, sprite: Sprite) {
+        self.sprites.insert(id, sprite);
     }
 
     pub fn add_texture(&mut self, texture: Texture<'t>) -> usize {
