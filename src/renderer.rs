@@ -1,11 +1,8 @@
-#![allow(unused_imports)]
-
 use sdl2::rect::Rect;
 use sdl2::pixels::Color;
-use sdl2::render::{Canvas, Texture};
 
 use crate::world::GameWorld;
-use crate::texture::{DrawContext, Sprite, SpriteId};
+use crate::texture::{DrawContext, SpriteId};
 
 
 #[allow(dead_code)]

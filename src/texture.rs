@@ -1,17 +1,14 @@
-#![allow(unused_imports)]
-#![allow(dead_code)]
-
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::collections::HashMap;
 use std::path::Path;
 
-use sdl2::rect::{Rect};
-use sdl2::surface::{Surface};
+use sdl2::rect::Rect;
+use sdl2::surface::Surface;
 use sdl2::render::{Texture, Canvas, TextureCreator};
 use sdl2::video::{Window, WindowContext};
-use sdl2::image::{LoadSurface};
-use sdl2::pixels::{PixelFormatEnum};
+use sdl2::image::LoadSurface;
+use sdl2::pixels::PixelFormatEnum;
 
 use crate::robot::RobotId;
 
