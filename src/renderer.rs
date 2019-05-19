@@ -125,41 +125,32 @@ impl<'a> Renderer<'a> {
 
 
     fn init_board(&mut self, world: &GameWorld) -> Result<(), String> {
-        let mut tm = self.draw_ctx.tm.borrow_mut();
+        let (format, width, height);
         
-        let board_cell = tm.get_sprite(&SpriteId::BoardCell)?;
+        {
+            let tm = self.draw_ctx.tm.borrow();
+            let board_cell = tm.get_sprite(&SpriteId::BoardCell)?;
+            format = tm.get_texture(board_cell)?.query().format;
+            width = board_cell.geom.width() * world.board.columns as u32;
+            height = board_cell.geom.height() * world.board.rows as u32;
+        }
 
-        let format = tm.get_texture(board_cell)?.query().format;
-        let width = board_cell.geom.width() * world.board.columns as u32;
-        let height = board_cell.geom.height() * world.board.rows as u32;
-        
-        // Create the texture
-        let mut board_texture = tm.create_texture(format, width, height)?;
-
-        // Render the texture
-        let canvas = &mut self.draw_ctx.canvas;
-        let tile_texture = &tm.get_texture(board_cell)?;
-
-        let mut draw_err = Ok(());
-        canvas.with_texture_canvas(
-            &mut board_texture,
-            |texture_canvas| { 
-                draw_err = Self::draw_board(
-                    texture_canvas, 
+        let board = self.draw_ctx.create_texture(
+            SpriteId::SizedBoard{ width, height },
+            format, width, height,
+            |canvas, tm| {
+                let board_cell = tm.get_sprite(&SpriteId::BoardCell)?;
+                let tile_texture = tm.get_texture(board_cell)?;
+                
+                Self::draw_board(
+                    canvas, 
                     &tile_texture, 
                     &board_cell,
-                    world);
-            })
-            .map_err(|err| format!("{:?}", err))?;
-        // re-raise error of draw
-        draw_err?;
-
-        // save texture
-        let board = tm.add_sprite_from_texture(
-            board_texture, 
-            SpriteId::SizedBoard{ width, height });
+                    world)
+            })?;
         
-        // Remember this sprite for being the default board sprite
+        // Remember this sprite as being the default board sprite
+        let mut tm = self.draw_ctx.tm.borrow_mut();
         tm.set_sprite(SpriteId::DefaultBoard, board);
 
         Ok(())

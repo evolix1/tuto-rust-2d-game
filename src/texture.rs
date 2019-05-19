@@ -64,6 +64,34 @@ impl<'d> DrawContext<'d> {
         let texture = tm.get_texture(sprite)?;
         self.canvas.copy(texture, sprite.geom, area)
     }
+
+    pub fn create_texture<F, D>(
+        &mut self, 
+        id: SpriteId,
+        format: F, 
+        width: u32, 
+        height: u32,
+        draw: D
+        ) 
+        -> Result<Sprite, String> 
+        where F: Into<Option<PixelFormatEnum>>,
+              D: FnOnce(&mut Canvas<Window>, &TextureManager) -> Result<(), String>,
+    {
+        let mut tm = self.tm.borrow_mut();
+        
+        let mut texture = tm.create_texture(format, width, height)?;
+        
+        let mut draw_result = Ok(());
+        self.canvas.with_texture_canvas(
+            &mut texture,
+            |texture_canvas| { 
+                draw_result = draw(texture_canvas, &tm);
+            })
+            .map_err(|err| format!("{:?}", err))
+            .and(draw_result)
+            .map(|_| tm.add_sprite_from_texture(texture, id))
+    }
+
 }
 
 
@@ -112,7 +140,7 @@ impl<'t> TextureManager<'t> {
         Ok(())
     }
 
-    pub fn create_texture<F>(&self, format: F, width: u32, height: u32) 
+    pub fn create_texture<F>(&mut self, format: F, width: u32, height: u32) 
         -> Result<Texture<'t>, String> 
         where F: Into<Option<PixelFormatEnum>>
     {
