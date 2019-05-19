@@ -39,7 +39,8 @@ fn main() -> Result<(), String> {
     let mut renderer = renderer::Renderer::new(draw_ctx);
     
     let mut world = world::GameWorld::new();
-    world.robots[1].pos = Some(positionning::Pos::new(1u16, 4u16));
+    //world.reset_default_pos();
+    world.reset_rand_pos();
 
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
