@@ -1,9 +1,10 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
-use std::path::Path;
-use std::collections::HashMap;
 use std::cell::RefCell;
+use std::rc::Rc;
+use std::collections::HashMap;
+use std::path::Path;
 
 use sdl2::rect::{Rect};
 use sdl2::surface::{Surface};
@@ -15,9 +16,9 @@ use sdl2::pixels::{PixelFormatEnum};
 use crate::robot::RobotId;
 
 
-pub struct DrawContext<'d> {
-    pub canvas: &'d mut Canvas<Window>,
-    pub tm: RefCell<TextureManager<'d>>,
+pub struct DrawContext<'c, 't> {
+    pub canvas: &'c mut Canvas<Window>,
+    pub tm: Rc<RefCell<TextureManager<'t>>>,
 }
 
 
@@ -47,14 +48,14 @@ pub struct Sprite {
 }
 
 
-impl<'d> DrawContext<'d> {
+impl<'c, 't> DrawContext<'c, 't> {
     pub fn new(
-        canvas: &'d mut Canvas<Window>,
-        creator: &'d TextureCreator<WindowContext>,
-        ) -> DrawContext<'d> {
+        canvas: &'c mut Canvas<Window>,
+        creator: &'c TextureCreator<WindowContext>,
+        ) -> DrawContext<'c, 'c> {
         DrawContext {
             canvas,
-            tm: RefCell::new(TextureManager::new(creator)),
+            tm: Rc::new(RefCell::new(TextureManager::new(creator))),
         }
     }
 
@@ -75,21 +76,21 @@ impl<'d> DrawContext<'d> {
         ) 
         -> Result<Sprite, String> 
         where F: Into<Option<PixelFormatEnum>>,
-              D: FnOnce(&mut Canvas<Window>, &TextureManager) -> Result<(), String>,
+              D: for<'m> FnOnce(&'m mut DrawContext<'m, 't>) -> Result<(), String>,
     {
-        let mut tm = self.tm.borrow_mut();
-        
-        let mut texture = tm.create_texture(format, width, height)?;
+        let mut texture = self.tm.borrow_mut().create_texture(format, width, height)?;
         
         let mut draw_result = Ok(());
+        let reuse_tm = self.tm.clone();
         self.canvas.with_texture_canvas(
             &mut texture,
             |texture_canvas| { 
-                draw_result = draw(texture_canvas, &tm);
+                let mut ctx = DrawContext { canvas: texture_canvas, tm: reuse_tm };
+                draw_result = draw(&mut ctx);
             })
             .map_err(|err| format!("{:?}", err))
             .and(draw_result)
-            .map(|_| tm.add_sprite_from_texture(texture, id))
+            .map(|_| self.tm.borrow_mut().add_sprite_from_texture(texture, id))
     }
 
 }

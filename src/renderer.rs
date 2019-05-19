@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 use sdl2::render::{Canvas, Texture};
@@ -18,12 +20,12 @@ pub enum AspectRatio {
 
 pub struct Renderer<'a> {
     background_color: Color,
-    draw_ctx: DrawContext<'a>,
+    draw_ctx: DrawContext<'a, 'a>,
 }
 
 
 impl<'a> Renderer<'a> {
-    pub fn new(draw_ctx: DrawContext<'a>) -> Renderer<'a> {
+    pub fn new(draw_ctx: DrawContext<'a, 'a>) -> Renderer<'a> {
         Renderer {
             background_color: Color::RGB(220, 10, 10),
             draw_ctx,
@@ -138,34 +140,25 @@ impl<'a> Renderer<'a> {
         let board = self.draw_ctx.create_texture(
             SpriteId::SizedBoard{ width, height },
             format, width, height,
-            |canvas, tm| {
-                let board_cell = tm.get_sprite(&SpriteId::BoardCell)?;
-                let tile_texture = tm.get_texture(board_cell)?;
-                
-                Self::draw_board(
-                    canvas, 
-                    &tile_texture, 
-                    &board_cell,
-                    world)
+            |ctx| {
+                Self::draw_board(ctx, SpriteId::BoardCell, world)
             })?;
         
         // Remember this sprite as being the default board sprite
-        let mut tm = self.draw_ctx.tm.borrow_mut();
-        tm.set_sprite(SpriteId::DefaultBoard, board);
+        self.draw_ctx.tm.borrow_mut()
+            .set_sprite(SpriteId::DefaultBoard, board);
 
         Ok(())
     }
 
 
-    fn draw_board<T>(
-        canvas: &mut Canvas<T>,
-        texture: &Texture,
-        sprite: &Sprite,
+    fn draw_board<'b, 'c>(
+        draw_ctx: &mut DrawContext<'b, 'c>,
+        id: SpriteId,
         world: &GameWorld,
         ) -> Result<(), String> 
-        where T: sdl2::render::RenderTarget
         {
-            let (width, height) = canvas.output_size()?;
+            let (width, height) = draw_ctx.canvas.output_size()?;
             let width = width as f32;
             let height = height as f32;
 
@@ -177,13 +170,13 @@ impl<'a> Renderer<'a> {
                     let next_x = (((x as f32 + 1f32) / world.board.columns as f32) * width).floor();
                     let next_y = (((y as f32 + 1f32) / world.board.rows as f32) * height).floor();
 
-                    let tile_screen = Rect::new(
+                    let geom = Rect::new(
                         px as i32, 
                         py as i32, 
                         (next_x - px) as u32, 
                         (next_y - py) as u32);
 
-                    canvas.copy(texture, sprite.geom, tile_screen)?;
+                    draw_ctx.draw(&id, geom)?;
                 }
             }
 
