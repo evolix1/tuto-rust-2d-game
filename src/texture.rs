@@ -11,11 +11,11 @@ use sdl2::pixels::{PixelFormatEnum};
 use crate::robot::RobotId;
 
 
-pub struct DrawContext<'a> {
-    pub canvas: &'a mut Canvas<Window>,
-    creator: &'a TextureCreator<WindowContext>,
-    pub surfaces: Vec<Surface<'a>>,
-    pub textures: Vec<Texture<'a>>,
+pub struct DrawContext<'d> {
+    pub canvas: &'d mut Canvas<Window>,
+    creator: &'d TextureCreator<WindowContext>,
+    pub surfaces: Vec<Surface<'d>>,
+    pub textures: Vec<Texture<'d>>,
     pub sprites: HashMap<SpriteId, Sprite>,
 }
 
@@ -38,11 +38,11 @@ pub struct Sprite {
 }
 
 
-impl<'a> DrawContext<'a> {
+impl<'d> DrawContext<'d> {
     pub fn new(
-        canvas: &'a mut Canvas<Window>,
-        creator: &'a TextureCreator<WindowContext>,
-        ) -> DrawContext<'a> {
+        canvas: &'d mut Canvas<Window>,
+        creator: &'d TextureCreator<WindowContext>,
+        ) -> DrawContext<'d> {
         DrawContext {
             canvas,
             creator,
@@ -86,7 +86,7 @@ impl<'a> DrawContext<'a> {
     }
 
     pub fn create_texture<F>(&self, format: F, width: u32, height: u32) 
-        -> Result<Texture<'a>, String> 
+        -> Result<Texture<'d>, String> 
         where F: Into<Option<PixelFormatEnum>>
     {
         self.creator
@@ -94,7 +94,7 @@ impl<'a> DrawContext<'a> {
             .map_err(|err| format!("{:?}", err))
     }
 
-    pub fn add_sprite_from_texture(&mut self, texture: Texture<'a>, id: SpriteId) -> Sprite {
+    pub fn add_sprite_from_texture(&mut self, texture: Texture<'d>, id: SpriteId) -> Sprite {
         let info = texture.query();
         let geom = Rect::new(0, 0, info.width, info.height);
         
@@ -106,12 +106,28 @@ impl<'a> DrawContext<'a> {
         sprite
     }
 
-    pub fn add_texture(&mut self, texture: Texture<'a>) -> usize {
+    pub fn add_texture(&mut self, texture: Texture<'d>) -> usize {
         self.textures.push(texture);
         self.textures.len() - 1
     }
 
     pub fn sprite_exists(&self, id: &SpriteId) -> bool {
         self.sprites.contains_key(id)
+    }
+
+    pub fn get_texture(&self, sprite: &Sprite) -> Result<&Texture<'d>, String> {
+        self.textures.get(sprite.texture_index)
+            .ok_or_else(|| format!("missing texture"))
+    }
+
+    pub fn get_sprite(&self, id: &SpriteId) -> Result<&Sprite, String> {
+        self.sprites.get(id)
+            .ok_or_else(|| format!("missing sprite"))
+    }
+
+    pub fn draw(&mut self, id: &SpriteId, area: Rect) -> Result<(), String> {
+        let sprite = self.get_sprite(id)?;
+        let texture = self.textures.get(sprite.texture_index).ok_or_else(|| format!("missing texture"))?;
+        self.canvas.copy(texture, sprite.geom, area)
     }
 }

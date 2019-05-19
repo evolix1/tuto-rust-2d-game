@@ -98,14 +98,10 @@ impl<'a> Renderer<'a> {
         area: Rect,
         aspect: AspectRatio
         ) -> Result<Rect, String> {
-        let sprite = self.draw_ctx.sprites.get(id)
-            .ok_or_else(|| format!("missing sprite"))?;
-        
-        let texture = &self.draw_ctx.textures[sprite.texture_index];
-        
         let display_geom = match aspect {
             AspectRatio::Stretch => area,
             AspectRatio::KeepIn => {
+                let sprite = self.draw_ctx.get_sprite(id)?;
                 let width = (area.height() as f32 
                              * sprite.geom.width() as f32 
                              / sprite.geom.height() as f32).floor() as u32;
@@ -121,7 +117,7 @@ impl<'a> Renderer<'a> {
             },
         };
         
-        self.draw_ctx.canvas.copy(texture, sprite.geom, display_geom)?;
+        self.draw_ctx.draw(id, display_geom)?;
         
         Ok(display_geom)
     }
