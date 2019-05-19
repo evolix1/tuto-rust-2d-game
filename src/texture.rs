@@ -3,6 +3,7 @@
 
 use std::path::Path;
 use std::collections::HashMap;
+use std::cell::RefCell;
 
 use sdl2::rect::{Rect};
 use sdl2::surface::{Surface};
@@ -16,7 +17,7 @@ use crate::robot::RobotId;
 
 pub struct DrawContext<'d> {
     pub canvas: &'d mut Canvas<Window>,
-    pub tm: TextureManager<'d>,
+    pub tm: RefCell<TextureManager<'d>>,
 }
 
 
@@ -53,13 +54,14 @@ impl<'d> DrawContext<'d> {
         ) -> DrawContext<'d> {
         DrawContext {
             canvas,
-            tm: TextureManager::new(creator),
+            tm: RefCell::new(TextureManager::new(creator)),
         }
     }
 
     pub fn draw(&mut self, id: &SpriteId, area: Rect) -> Result<(), String> {
-        let sprite = self.tm.get_sprite(id)?;
-        let texture = self.tm.textures.get(sprite.texture_index).ok_or_else(|| format!("missing texture"))?;
+        let tm = self.tm.borrow();
+        let sprite = tm.get_sprite(id)?;
+        let texture = tm.get_texture(sprite)?;
         self.canvas.copy(texture, sprite.geom, area)
     }
 }

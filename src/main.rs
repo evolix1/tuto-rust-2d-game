@@ -33,8 +33,8 @@ fn main() -> Result<(), String> {
         .expect("could not make a canvas");
     let creator = canvas.texture_creator();
 
-    let mut draw_ctx = texture::DrawContext::new(&mut canvas, &creator);
-    draw_ctx.tm.load_static()?;
+    let draw_ctx = texture::DrawContext::new(&mut canvas, &creator);
+    draw_ctx.tm.borrow_mut().load_static()?;
     
     let mut renderer = renderer::Renderer::new(draw_ctx);
     
