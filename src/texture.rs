@@ -140,6 +140,18 @@ impl<'t> TextureManager<'t> {
         Ok(())
     }
 
+    // Texture management below
+    
+    pub fn add_texture(&mut self, texture: Texture<'t>) -> usize {
+        self.textures.push(texture);
+        self.textures.len() - 1
+    }
+
+    pub fn get_texture(&self, sprite: &Sprite) -> Result<&Texture<'t>, String> {
+        self.textures.get(sprite.texture_index)
+            .ok_or_else(|| format!("missing texture"))
+    }
+
     pub fn create_texture<F>(&mut self, format: F, width: u32, height: u32) 
         -> Result<Texture<'t>, String> 
         where F: Into<Option<PixelFormatEnum>>
@@ -149,6 +161,21 @@ impl<'t> TextureManager<'t> {
             .map_err(|err| format!("{:?}", err))
     }
 
+    // Sprite management
+    
+    pub fn get_sprite(&self, id: &SpriteId) -> Result<&Sprite, String> {
+        self.sprites.get(id)
+            .ok_or_else(|| format!("missing sprite"))
+    }
+
+    pub fn sprite_exists(&self, id: &SpriteId) -> bool {
+        self.sprites.contains_key(id)
+    }
+    
+    pub fn set_sprite(&mut self, id: SpriteId, sprite: Sprite) {
+        self.sprites.insert(id, sprite);
+    }
+    
     pub fn add_sprite_from_texture(&mut self, texture: Texture<'t>, id: SpriteId) -> Sprite {
         let info = texture.query();
         let geom = Rect::new(0, 0, info.width, info.height);
@@ -160,27 +187,5 @@ impl<'t> TextureManager<'t> {
         
         sprite
     }
-    
-    pub fn set_sprite(&mut self, id: SpriteId, sprite: Sprite) {
-        self.sprites.insert(id, sprite);
-    }
 
-    pub fn add_texture(&mut self, texture: Texture<'t>) -> usize {
-        self.textures.push(texture);
-        self.textures.len() - 1
-    }
-
-    pub fn sprite_exists(&self, id: &SpriteId) -> bool {
-        self.sprites.contains_key(id)
-    }
-
-    pub fn get_texture(&self, sprite: &Sprite) -> Result<&Texture<'t>, String> {
-        self.textures.get(sprite.texture_index)
-            .ok_or_else(|| format!("missing texture"))
-    }
-
-    pub fn get_sprite(&self, id: &SpriteId) -> Result<&Sprite, String> {
-        self.sprites.get(id)
-            .ok_or_else(|| format!("missing sprite"))
-    }
 }
