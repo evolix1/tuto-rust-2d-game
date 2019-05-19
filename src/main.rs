@@ -34,7 +34,7 @@ fn main() -> Result<(), String> {
     let creator = canvas.texture_creator();
 
     let mut draw_ctx = texture::DrawContext::new(&mut canvas, &creator);
-    draw_ctx.load_static()?;
+    draw_ctx.tm.load_static()?;
     
     let mut renderer = renderer::Renderer::new(draw_ctx);
     

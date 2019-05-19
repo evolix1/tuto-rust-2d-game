@@ -13,9 +13,14 @@ use crate::robot::RobotId;
 
 pub struct DrawContext<'d> {
     pub canvas: &'d mut Canvas<Window>,
-    creator: &'d TextureCreator<WindowContext>,
-    pub surfaces: Vec<Surface<'d>>,
-    pub textures: Vec<Texture<'d>>,
+    pub tm: TextureManager<'d>,
+}
+
+
+pub struct TextureManager<'t> {
+    creator: &'t TextureCreator<WindowContext>,
+    pub surfaces: Vec<Surface<'t>>,
+    pub textures: Vec<Texture<'t>>,
     pub sprites: HashMap<SpriteId, Sprite>,
 }
 
@@ -45,6 +50,23 @@ impl<'d> DrawContext<'d> {
         ) -> DrawContext<'d> {
         DrawContext {
             canvas,
+            tm: TextureManager::new(creator),
+        }
+    }
+
+    pub fn draw(&mut self, id: &SpriteId, area: Rect) -> Result<(), String> {
+        let sprite = self.tm.get_sprite(id)?;
+        let texture = self.tm.textures.get(sprite.texture_index).ok_or_else(|| format!("missing texture"))?;
+        self.canvas.copy(texture, sprite.geom, area)
+    }
+}
+
+
+impl<'t> TextureManager<'t> {
+    pub fn new(
+        creator: &'t TextureCreator<WindowContext>,
+        ) -> TextureManager<'t> {
+        TextureManager {
             creator,
             surfaces: Vec::new(),
             textures: Vec::new(),
@@ -86,7 +108,7 @@ impl<'d> DrawContext<'d> {
     }
 
     pub fn create_texture<F>(&self, format: F, width: u32, height: u32) 
-        -> Result<Texture<'d>, String> 
+        -> Result<Texture<'t>, String> 
         where F: Into<Option<PixelFormatEnum>>
     {
         self.creator
@@ -94,7 +116,7 @@ impl<'d> DrawContext<'d> {
             .map_err(|err| format!("{:?}", err))
     }
 
-    pub fn add_sprite_from_texture(&mut self, texture: Texture<'d>, id: SpriteId) -> Sprite {
+    pub fn add_sprite_from_texture(&mut self, texture: Texture<'t>, id: SpriteId) -> Sprite {
         let info = texture.query();
         let geom = Rect::new(0, 0, info.width, info.height);
         
@@ -106,7 +128,7 @@ impl<'d> DrawContext<'d> {
         sprite
     }
 
-    pub fn add_texture(&mut self, texture: Texture<'d>) -> usize {
+    pub fn add_texture(&mut self, texture: Texture<'t>) -> usize {
         self.textures.push(texture);
         self.textures.len() - 1
     }
@@ -115,7 +137,7 @@ impl<'d> DrawContext<'d> {
         self.sprites.contains_key(id)
     }
 
-    pub fn get_texture(&self, sprite: &Sprite) -> Result<&Texture<'d>, String> {
+    pub fn get_texture(&self, sprite: &Sprite) -> Result<&Texture<'t>, String> {
         self.textures.get(sprite.texture_index)
             .ok_or_else(|| format!("missing texture"))
     }
@@ -123,11 +145,5 @@ impl<'d> DrawContext<'d> {
     pub fn get_sprite(&self, id: &SpriteId) -> Result<&Sprite, String> {
         self.sprites.get(id)
             .ok_or_else(|| format!("missing sprite"))
-    }
-
-    pub fn draw(&mut self, id: &SpriteId, area: Rect) -> Result<(), String> {
-        let sprite = self.get_sprite(id)?;
-        let texture = self.textures.get(sprite.texture_index).ok_or_else(|| format!("missing texture"))?;
-        self.canvas.copy(texture, sprite.geom, area)
     }
 }

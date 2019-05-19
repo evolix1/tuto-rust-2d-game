@@ -44,7 +44,7 @@ impl<'a> Renderer<'a> {
         self.draw_ctx.canvas.clear();
 
         // Initialise the first time only
-        if !self.draw_ctx.sprite_exists(&SpriteId::DefaultBoard) {
+        if !self.draw_ctx.tm.sprite_exists(&SpriteId::DefaultBoard) {
             self.init_board(world)?;
         }
 
@@ -101,7 +101,7 @@ impl<'a> Renderer<'a> {
         let display_geom = match aspect {
             AspectRatio::Stretch => area,
             AspectRatio::KeepIn => {
-                let sprite = self.draw_ctx.get_sprite(id)?;
+                let sprite = self.draw_ctx.tm.get_sprite(id)?;
                 let width = (area.height() as f32 
                              * sprite.geom.width() as f32 
                              / sprite.geom.height() as f32).floor() as u32;
@@ -124,20 +124,20 @@ impl<'a> Renderer<'a> {
 
 
     fn init_board(&mut self, world: &GameWorld) -> Result<(), String> {
-        let board_cell = self.draw_ctx.sprites
+        let board_cell = self.draw_ctx.tm.sprites
             .get(&SpriteId::BoardCell)
             .expect("board cell sprite exists");
 
-        let format = self.draw_ctx.textures[board_cell.texture_index].query().format;
+        let format = self.draw_ctx.tm.textures[board_cell.texture_index].query().format;
         let width = board_cell.geom.width() * world.board.columns as u32;
         let height = board_cell.geom.height() * world.board.rows as u32;
         
         // Create the texture
-        let mut board_texture = self.draw_ctx.create_texture(format, width, height)?;
+        let mut board_texture = self.draw_ctx.tm.create_texture(format, width, height)?;
 
         // Render the texture
         let canvas = &mut self.draw_ctx.canvas;
-        let tile_texture = &self.draw_ctx.textures[board_cell.texture_index];
+        let tile_texture = &self.draw_ctx.tm.textures[board_cell.texture_index];
 
         let mut draw_err = Ok(());
         canvas.with_texture_canvas(
@@ -154,12 +154,12 @@ impl<'a> Renderer<'a> {
         draw_err?;
 
         // save texture
-        let board = self.draw_ctx.add_sprite_from_texture(
+        let board = self.draw_ctx.tm.add_sprite_from_texture(
             board_texture, 
             SpriteId::SizedBoard{ width, height });
         
         // Remember this sprite for being the default board sprite
-        self.draw_ctx.sprites.insert(SpriteId::DefaultBoard, board);
+        self.draw_ctx.tm.sprites.insert(SpriteId::DefaultBoard, board);
 
         Ok(())
     }
