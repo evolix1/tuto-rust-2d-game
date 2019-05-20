@@ -17,7 +17,7 @@ pub enum InvalidCommand {
 
 impl GameWorld {
     pub fn new() -> GameWorld {
-        let board = Board::new_custom(8, 16);
+        let board = Board::new_custom(8, 16).expect("valid dimension");
         let robots = [
             Robot::new(RobotId::Red),
             Robot::new(RobotId::Green),
@@ -47,7 +47,7 @@ impl GameWorld {
     pub fn find_start_pos(&self) -> Option<Pos> {
         (0..1000)
             .map(|_| Pos::rand(self.board.columns, self.board.rows))
-            .filter(|pos| !self.board.has_target_symbol(pos))
+            .filter(|pos| self.board.is_start_pos(pos))
             .filter(|pos| self.robots.iter().all(|r| match r.pos {
                 Some(ref p) if p == pos => false,
                 _ => true
@@ -65,26 +65,26 @@ impl GameWorld {
             .take()
             .ok_or(InvalidCommand::NotPlayingRobot)?;
 
-        let mut hits = self.board.hits_along(&start_pos, way);
+        let mut hits = vec![self.board.hit_from(&start_pos, way)];
         hits.extend(
-            self.robots
-            .iter()
+            self.robots.iter()
             .filter(|robot| robot.id != id)
             .filter_map(|robot| robot.pos.as_ref())
-            .filter_map(|pos| start_pos.hit_along_to(&pos, way)));
+            .filter_map(|pos| start_pos.find_hit_to(&pos, way))
+        );
 
-        let new_pos = hits
+        let end_pos = hits
             .into_iter()
             .min_by_key(|hit| hit.distance)
             .map(|hit| hit.pos)
-            .expect("at least one hit from the board should exists");
+            .expect("at least one hit from the board should exist");
 
-        println!("Robot {:?} move from {:?} to {:?}", id, start_pos, new_pos);
+        println!("Robot {:?} move from {:?} to {:?}", id, start_pos, end_pos);
 
         self.robots.iter_mut()
             .find(|ref robot| robot.id == id)
             .expect("robot exists")
-            .pos = Some(new_pos);
+            .pos = Some(end_pos);
 
         Ok(())
     }
