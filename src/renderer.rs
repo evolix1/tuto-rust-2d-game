@@ -128,7 +128,7 @@ impl<'r> Renderer<'r> {
         
         {
             let tm = self.draw_ctx.tm.borrow();
-            let board_cell = tm.get_sprite(&SpriteId::BoardCell)?;
+            let board_cell = tm.get_sprite(&SpriteId::CellBackground)?;
             format = tm.get_texture(board_cell)?.query().format;
             width = board_cell.geom.width() * world.board.columns as u32;
             height = board_cell.geom.height() * world.board.rows as u32;
@@ -138,7 +138,7 @@ impl<'r> Renderer<'r> {
             SpriteId::SizedBoard{ width, height },
             format, width, height,
             |ctx| {
-                Self::draw_board(ctx, SpriteId::BoardCell, world)
+                Self::draw_board(ctx, world)
             })?;
         
         // Remember this sprite as being the default board sprite
@@ -151,10 +151,11 @@ impl<'r> Renderer<'r> {
 
     fn draw_board<'c, 't>(
         draw_ctx: &mut DrawContext<'c, 't>,
-        id: SpriteId,
         world: &GameWorld,
         ) -> Result<(), String> 
         {
+            let sprite_id = SpriteId::CellBackground;
+            
             let (width, height) = draw_ctx.canvas.output_size()?;
             let width = width as f32;
             let height = height as f32;
@@ -173,7 +174,7 @@ impl<'r> Renderer<'r> {
                         (next_x - px) as u32, 
                         (next_y - py) as u32);
 
-                    draw_ctx.draw(&id, geom)?;
+                    draw_ctx.draw(&sprite_id, geom)?;
                 }
             }
 

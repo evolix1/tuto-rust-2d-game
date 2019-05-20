@@ -30,9 +30,12 @@ pub struct TextureManager<'t> {
 #[derive(PartialEq, Eq, Hash)]
 pub enum SpriteId {
     // Board management
-    BoardCell,
+    CellBackground,
     SizedBoard { width: u32, height: u32 },
     DefaultBoard,
+    // Corner overlay
+    CornerWall,
+    SideWall(u8),
     //
     Robot(RobotId),
 }
@@ -117,24 +120,26 @@ impl<'t> TextureManager<'t> {
         ];
 
         let side = self.textures[0].query().height;
-        
-        self.sprites.insert(
-            SpriteId::BoardCell,
-            Sprite { texture_index: 0, geom: Rect::new(0, 0, side, side) });
-        
-        // Robots
-        self.sprites.insert(
-            SpriteId::Robot(RobotId::Blue),
-            Sprite { texture_index: 0, geom: Rect::new(1 * side as i32, 0, side, side) });
-        self.sprites.insert(
-            SpriteId::Robot(RobotId::Green),
-            Sprite { texture_index: 0, geom: Rect::new(2 * side as i32, 0, side, side) });
-        self.sprites.insert(
-            SpriteId::Robot(RobotId::Yellow),
-            Sprite { texture_index: 0, geom: Rect::new(3 * side as i32, 0, side, side) });
-        self.sprites.insert(
+
+        let ids = vec![
             SpriteId::Robot(RobotId::Red),
-            Sprite { texture_index: 0, geom: Rect::new(4 * side as i32, 0, side, side) });
+            SpriteId::Robot(RobotId::Green),
+            SpriteId::Robot(RobotId::Blue),
+            SpriteId::Robot(RobotId::Yellow),
+            SpriteId::CellBackground,
+            SpriteId::CornerWall,
+            SpriteId::SideWall(1),
+            SpriteId::SideWall(2),
+            SpriteId::SideWall(3),
+        ];
+        
+        for (i, id) in ids.into_iter().enumerate() {
+            let sprite = Sprite { 
+                texture_index: 0, 
+                geom: Rect::new(i as i32 * side as i32, 0, side, side) 
+            };
+            self.sprites.insert(id, sprite);
+        }
         
         Ok(())
     }
