@@ -73,8 +73,6 @@ impl Board {
     pub fn hit_from(&self, start: &Pos, way: Way) -> Hit {
         let side_pos = self.side_hit(start, way);
         
-        let x = start.direct_path_to(&side_pos.pos).unwrap_or(Vec::new());
-        
         start.direct_path_to(&side_pos.pos)
             .unwrap_or(Vec::new())
             .into_iter()
