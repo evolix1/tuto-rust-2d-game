@@ -46,6 +46,23 @@ pub struct Sprite {
     pub texture_index: usize,
     pub geom: Rect
 }
+        
+
+#[allow(dead_code)]
+pub enum FlipAxis {
+    NoFlip,
+    FlipHorizontal,
+    FlipVertical,
+    FlipBoth
+}
+
+#[allow(dead_code)]
+pub enum RotateAngle {
+    NoTurn,
+    TurnLeft,
+    TurnRight,
+    HalfTurn
+}
 
 
 impl<'c, 't> DrawContext<'c, 't> {
@@ -64,6 +81,34 @@ impl<'c, 't> DrawContext<'c, 't> {
         let sprite = tm.get_sprite(id)?;
         let texture = tm.get_texture(sprite)?;
         self.canvas.copy(texture, sprite.geom, area)
+    }
+
+    pub fn draw_transform(
+        &mut self, 
+        id: &SpriteId, 
+        area: Rect,
+        rotation: RotateAngle,
+        flip: FlipAxis,
+        ) -> Result<(), String> {
+        let angle = match rotation {
+            RotateAngle::NoTurn => 0f64,
+            RotateAngle::TurnLeft => 90f64,
+            RotateAngle::TurnRight => 270f64,
+            RotateAngle::HalfTurn => 180f64,
+        };
+        let (flip_horizontal, flip_vertical) = match flip {
+            FlipAxis::NoFlip => (false, false),
+            FlipAxis::FlipHorizontal => (true, false),
+            FlipAxis::FlipVertical => (false, true),
+            FlipAxis::FlipBoth => (true, true),
+        };
+        let center = None;
+        
+        let tm = self.tm.borrow();
+        let sprite = tm.get_sprite(id)?;
+        let texture = tm.get_texture(sprite)?;
+        self.canvas.copy_ex(texture, sprite.geom, area, 
+                            angle, center, flip_horizontal, flip_vertical)
     }
 
     pub fn create_texture<F, D>(

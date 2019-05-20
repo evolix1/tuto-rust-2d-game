@@ -17,7 +17,8 @@ pub enum InvalidCommand {
 
 impl GameWorld {
     pub fn new() -> GameWorld {
-        let board = Board::new_custom(8, 16).expect("valid dimension");
+        //let board = Board::new_custom(8, 16).expect("valid dimension");
+        let board = Board::new_default();
         let robots = [
             Robot::new(RobotId::Red),
             Robot::new(RobotId::Green),

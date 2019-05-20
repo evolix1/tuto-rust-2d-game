@@ -2,7 +2,9 @@ use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 
 use crate::world::GameWorld;
-use crate::texture::{DrawContext, SpriteId};
+use crate::texture::{DrawContext, SpriteId, FlipAxis, RotateAngle};
+use crate::positionning::Pos;
+use crate::board::MovePossibility;
 
 
 #[allow(dead_code)]
@@ -174,7 +176,32 @@ impl<'r> Renderer<'r> {
                         (next_x - px) as u32, 
                         (next_y - py) as u32);
 
+                    // base (background)
                     draw_ctx.draw(&sprite_id, geom)?;
+
+                    // walls
+                    let board_pos = Pos::new(x, y);
+                    let moves = world.board.possible_moves(&board_pos);
+                    
+                    match moves {
+                        Ok(MovePossibility { down: false, right: false, .. }) => 
+                            draw_ctx.draw_transform(
+                                &SpriteId::SideWall(2), geom,
+                                RotateAngle::HalfTurn, FlipAxis::NoFlip)?,
+                        Ok(MovePossibility { left: false, .. }) => 
+                            draw_ctx.draw_transform(
+                                &SpriteId::SideWall(1), geom,
+                                RotateAngle::TurnRight, FlipAxis::NoFlip)?,
+                        Ok(MovePossibility { right: false, .. }) => 
+                            draw_ctx.draw_transform(
+                                &SpriteId::SideWall(1), geom,
+                                RotateAngle::TurnLeft, FlipAxis::NoFlip)?,
+                        Ok(MovePossibility { up: false, .. }) => 
+                            draw_ctx.draw_transform(
+                                &SpriteId::SideWall(1), geom,
+                                RotateAngle::NoTurn, FlipAxis::NoFlip)?,
+                        _ => (),
+                    }
                 }
             }
 
