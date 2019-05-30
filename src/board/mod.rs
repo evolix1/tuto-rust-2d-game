@@ -41,7 +41,7 @@ pub trait GameBoard {
     fn is_start_pos(&self, pos: &Pos) -> Result<bool, BoardError>;
     
     // Evaluate what actions can be done at given position.
-    fn moves_from(&self, pos: &Pos) -> Result<MovePossibility, BoardError>;
+    fn moves_from(&self, start: &Pos) -> Result<MovePossibility, BoardError>;
     
     // Indicates the position of hit with the board content.
     fn hit_from(&self, start: &Pos, way: Way) -> Result<Hit, BoardError>;
@@ -66,6 +66,7 @@ pub trait GameBoard {
 
 
 impl MovePossibility {
+    #[allow(dead_code)]
     pub fn can_go(&self, way: &Way) -> bool {
         match way {
             Way::Up => self.up,
@@ -74,8 +75,20 @@ impl MovePossibility {
             Way::Right => self.right,
         }
     }
+
+    #[allow(dead_code)]
+    pub fn all() -> MovePossibility {
+        MovePossibility { up: true, down: true, left: true, right: true }
+    }
+
+    #[allow(dead_code)]
+    pub fn none() -> MovePossibility {
+        MovePossibility { up: false, down: false, left: false, right: false }
+    }
 }
 
-// Re-export
+//
 mod individual_cells;
+mod indirect_table;
 pub use self::individual_cells::BoardByHashMap;
+pub use self::indirect_table::BoardByIndirectTable;

@@ -55,22 +55,22 @@ impl GameBoard for BoardByHashMap {
     }
 
 
-    fn moves_from(&self, pos: &Pos) -> Result<MovePossibility, BoardError> {
-        if pos.x < 0 && pos.x >= self.rows && pos.y < 0 && pos.y >= self.columns {
+    fn moves_from(&self, start: &Pos) -> Result<MovePossibility, BoardError> {
+        if start.x < 0 && start.x >= self.rows && start.y < 0 && start.y >= self.columns {
             return Err(BoardError::InvalidPosition);
         }
 
         let default = MovePossibility { up: true, down: true, left: true, right: true };
-        Ok(self.special_cells.get(pos).unwrap_or(&default).clone())
+        Ok(self.special_cells.get(start).unwrap_or(&default).clone())
     }
 
 
     fn hit_from(&self, start: &Pos, way: Way) -> Result<Hit, BoardError> {
-        let side_pos = self.side_hit(start, way)?;
+        let edge = self.side_hit(start, way)?;
 
-        // Gather all positions for `start` to `side_pos`.
+        // Gather all positions for `start` to `edge`.
         let hit = 
-            start.direct_path_to(&side_pos.pos)
+            start.direct_path_to(&edge.pos)
             .unwrap_or(Vec::new())
             .into_iter()
             // Keep only positions that block our way
@@ -86,7 +86,7 @@ impl GameBoard for BoardByHashMap {
             // Keep the closest position
             .filter(|hit| hit.distance >= 0)
                 .min_by_key(|hit| hit.distance)
-                .unwrap_or(side_pos);
+                .unwrap_or(edge);
 
         Ok(hit)
     }

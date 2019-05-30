@@ -1,4 +1,4 @@
-use crate::board::{GameBoard, BoardByHashMap};
+use crate::board::{GameBoard, BoardByHashMap, BoardByIndirectTable};
 use crate::robot::{Robot, RobotId};
 use crate::positionning::{Pos, Way};
 
@@ -17,8 +17,8 @@ pub enum InvalidCommand {
 
 impl GameWorld {
     pub fn new() -> GameWorld {
-        //let board = Box::new(Board::new_custom(8, 16).expect("valid dimension"));
-        let board = Box::new(BoardByHashMap::new_default());
+        let board = Box::new(BoardByIndirectTable::new(16, 16).expect("valid dimension"));
+        
         let robots = [
             Robot::new(RobotId::Red),
             Robot::new(RobotId::Green),
