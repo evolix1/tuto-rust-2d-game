@@ -1,10 +1,14 @@
-use crate::board::{GameBoardEditable, BoardByHashMap, BoardByIndirectTable};
+use crate::board::{
+    EditableBoard, 
+    Dimensions,
+    BoardByIndividualCells, 
+    BoardByIndirectTable};
 use crate::robot::{Robot, RobotId};
 use crate::positionning::{Pos, Way};
 
 
 pub struct GameWorld {
-    pub board: Box<dyn GameBoardEditable>,
+    pub board: Box<dyn EditableBoard>,
     pub robots: [Robot; 4],
 }
 
@@ -17,7 +21,9 @@ pub enum InvalidCommand {
 
 impl GameWorld {
     pub fn new() -> GameWorld {
-        let mut board = Box::new(BoardByIndirectTable::new(16, 16).expect("valid dimension"));
+        //let mut board = Box::new(BoardByIndirectTable::new());
+        let mut board = Box::new(BoardByIndividualCells::new());
+        board.reset(Dimensions{ rows: 16, columns: 16 }).expect("valid dimension");
 
         board.put_wall(&Pos::new(4, 0), Way::Right).expect("valid position");
         board.put_wall(&Pos::new(11, 0), Way::Right).expect("valid position");
@@ -51,9 +57,9 @@ impl GameWorld {
 
 
     pub fn find_start_pos(&self) -> Option<Pos> {
-        let (columns, rows) = self.board.dim();
+        let dim = self.board.dim();
         (0..1000)
-            .map(|_| Pos::rand(columns, rows))
+            .map(|_| Pos::rand(dim.columns, dim.rows))
             .filter(|pos| self.board.is_start_pos(pos).unwrap_or(false))
             .filter(|pos| self.robots.iter().all(|r| match r.pos {
                 Some(ref p) if p == pos => false,

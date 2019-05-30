@@ -1,71 +1,65 @@
 use std::collections::HashMap;
 
 use crate::positionning::{Pos, Way, Hit};
-use super::{BoardError, MovePossibility, GameBoard};
+
+use super::dim::Dimensions;
+use super::error::{Error, Result};
+use super::moves::MovePossibility;
+use super::board::{Board, EditableBoard};
 
 
 #[derive(Debug)]
-pub struct BoardByHashMap {
-    pub rows: isize,
-    pub columns: isize,
-    special_cells: HashMap<Pos, MovePossibility>,
+pub struct BoardByIndividualCells {
+    dim: Dimensions,
+    cells: HashMap<Pos, MovePossibility>,
 }
 
 
-impl BoardByHashMap {
+impl BoardByIndividualCells {
+
     #[allow(dead_code)]
-    pub fn new_custom(rows: isize, columns: isize) -> Result<BoardByHashMap, BoardError> {
-        if rows >= 2 && columns >= 2 {
-            Ok(BoardByHashMap { rows, columns, special_cells: HashMap::new() })
-        } else {
-            Err(BoardError::InvalidDimensions)
+    pub fn new() -> BoardByIndividualCells {
+        BoardByIndividualCells {
+            dim: Dimensions { rows: 0, columns: 0 },
+            cells: HashMap::new(),
         }
     }
 
-
-    #[allow(dead_code)]
-    pub fn new_default() -> BoardByHashMap {
-        let default = MovePossibility { up: true, down: true, left: true, right: true };
-        let special_cells = [
-            (Pos::new(4, 0), MovePossibility { right: false, ..default }),
-            (Pos::new(5, 0), MovePossibility { left: false, ..default }),
-            (Pos::new(11, 0), MovePossibility { right: false, ..default }),
-            (Pos::new(12, 0), MovePossibility { left: false, ..default }),
-            (Pos::new(2, 1), MovePossibility { down: false, right: false, ..default }),
-            (Pos::new(3, 1), MovePossibility { left: false, ..default }),
-            (Pos::new(2, 2), MovePossibility { up: false, ..default }),
-        ].iter().cloned().collect();
-        
-        BoardByHashMap { rows: 16, columns: 16, special_cells }
-    }
 }
 
 
-impl GameBoard for BoardByHashMap {
-    fn row_count(&self) -> isize {
-        self.rows
+impl Board for BoardByIndividualCells {
+    fn dim(&self) -> Dimensions {
+        self.dim.clone()
     }
 
-    fn column_count(&self) -> isize {
-        self.columns
-    }
 
-    fn is_start_pos(&self, _pos: &Pos) -> Result<bool, BoardError> {
+    fn is_start_pos(&self, _pos: &Pos) -> Result<bool> {
         Ok(true)
     }
 
 
-    fn moves_from(&self, start: &Pos) -> Result<MovePossibility, BoardError> {
-        if start.x < 0 && start.x >= self.rows && start.y < 0 && start.y >= self.columns {
-            return Err(BoardError::InvalidPosition);
-        }
+    fn moves_from(&self, start: &Pos) -> Result<MovePossibility> {
+        if self.pos_exists(start) {
+            let mut moves = self.cells
+                .get(start)
+                .cloned()
+                .unwrap_or_else(MovePossibility::all);
+            
+            moves.up &= start.y > 0;
+            moves.down &= start.y + 1 < self.dim.rows;
+            moves.left &= start.x > 0;
+            moves.right &= start.x + 1 < self.dim.columns;
 
-        let default = MovePossibility { up: true, down: true, left: true, right: true };
-        Ok(self.special_cells.get(start).unwrap_or(&default).clone())
+            Ok(moves)
+        } 
+        else {
+            Err(Error::OutOfBoardPosition) 
+        }
     }
 
 
-    fn hit_from(&self, start: &Pos, way: Way) -> Result<Hit, BoardError> {
+    fn hit_from(&self, start: &Pos, way: Way) -> Result<Hit> {
         let edge = self.side_hit(start, way)?;
 
         // Gather all positions for `start` to `edge`.
@@ -89,5 +83,79 @@ impl GameBoard for BoardByHashMap {
                 .unwrap_or(edge);
 
         Ok(hit)
+    }
+}
+
+
+impl EditableBoard for BoardByIndividualCells {
+
+    fn reset(&mut self, dim: Dimensions) -> Result<()> {
+        if dim.rows >= 2 && dim.columns >= 2 {
+            self.cells.clear();
+            self.dim = dim;
+            Ok(())
+        } 
+        else {
+            Err(Error::DimensionsNotSuitableForBoard)
+        }
+    }
+
+
+    fn put_wall(&mut self, pos: &Pos, way: Way) -> Result<()> {
+        if self.pos_exists(pos) {
+            match way {
+                Way::Up => {
+                    if pos.x != 0 {
+                        self.cells
+                            .entry(pos.clone())
+                            .or_insert_with(MovePossibility::all)
+                            .up = false;
+                        self.cells
+                            .entry(Pos::new(pos.x, pos.y - 1))
+                            .or_insert_with(MovePossibility::all)
+                            .down = false;
+                    }
+                },
+                Way::Down => {
+                    if pos.x + 1 != self.dim.rows {
+                        self.cells
+                            .entry(pos.clone())
+                            .or_insert_with(MovePossibility::all)
+                            .down = false;
+                        self.cells
+                            .entry(Pos::new(pos.x, pos.y + 1))
+                            .or_insert_with(MovePossibility::all)
+                            .up = false;
+                    } 
+                },
+                Way::Left => {
+                    if pos.y != 0 {
+                        self.cells
+                            .entry(pos.clone())
+                            .or_insert_with(MovePossibility::all)
+                            .left = false;
+                        self.cells
+                            .entry(Pos::new(pos.x - 1, pos.y))
+                            .or_insert_with(MovePossibility::all)
+                            .right = false;
+                    }
+                },
+                Way::Right => {
+                    if pos.y + 1 != self.dim.columns {
+                        self.cells
+                            .entry(pos.clone())
+                            .or_insert_with(MovePossibility::all)
+                            .right = false;
+                        self.cells
+                            .entry(Pos::new(pos.x + 1, pos.y))
+                            .or_insert_with(MovePossibility::all)
+                            .left = false;
+                    } 
+                },
+            };
+            Ok(())
+        } else {
+            Err(Error::OutOfBoardPosition)
+        }
     }
 }

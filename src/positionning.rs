@@ -12,8 +12,8 @@ pub enum Way {
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Pos {
-    pub x: isize,
-    pub y: isize,
+    pub x: usize,
+    pub y: usize,
 }
 
 
@@ -25,12 +25,12 @@ pub struct Hit {
 
 
 impl Pos {
-    pub fn new(x: isize, y: isize) -> Pos {
+    pub fn new(x: usize, y: usize) -> Pos {
         Pos { x, y }
     }
 
 
-    pub fn rand(columns: isize, rows: isize) -> Pos {
+    pub fn rand(columns: usize, rows: usize) -> Pos {
         let mut rng = thread_rng();
         let x = rng.gen_range(0, columns);
         let y = rng.gen_range(0, rows);
@@ -40,10 +40,10 @@ impl Pos {
     
     pub fn distance_to(&self, other: &Pos, way: Way) -> isize {
         match way { 
-            Way::Up => self.y - other.y,
-            Way::Down => other.y - self.y,
-            Way::Left => self.x - other.x,
-            Way::Right => other.x - self.x,
+            Way::Up => self.y as isize - other.y as isize,
+            Way::Down => other.y as isize - self.y as isize,
+            Way::Left => self.x as isize - other.x as isize,
+            Way::Right => other.x as isize - self.x as isize,
         }
     }
 
@@ -53,22 +53,22 @@ impl Pos {
             Way::Up if self.x != other.x || self.y <= other.y => None,
             Way::Up => Some(Hit {
                 pos: Pos{ x: self.x, y: other.y + 1 }, 
-                distance: self.y - other.y - 1
+                distance: self.y as isize - other.y as isize - 1
             }),
             Way::Down if self.x != other.x || self.y >= other.y => None,
             Way::Down => Some(Hit {
                 pos: Pos{ x: self.x, y: other.y - 1 },
-                distance: other.y - self.y - 1
+                distance: other.y as isize - self.y as isize - 1
             }),
             Way::Left if self.y != other.y || self.x <= other.x => None,
             Way::Left => Some(Hit {
                 pos: Pos{ x: other.x + 1, y: self.y },
-                distance: self.x - other.x - 1
+                distance: self.x as isize - other.x as isize - 1
             }),
             Way::Right if self.y != other.y || self.x >= other.x => None,
             Way::Right => Some(Hit {
                 pos: Pos{ x: other.x - 1, y: self.y },
-                distance: other.x - self.x - 1
+                distance: other.x as isize - self.x as isize - 1
             }),
         }
     }
