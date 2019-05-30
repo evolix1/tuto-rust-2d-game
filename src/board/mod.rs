@@ -8,15 +8,6 @@ pub enum BoardError {
 }
 
 
-#[derive(Debug, Clone)]
-pub struct MovePossibility {
-    pub up: bool,
-    pub down: bool,
-    pub left: bool,
-    pub right: bool,
-}
-
-
 pub trait GameBoard {
     // Number of rows
     fn row_count(&self) -> isize;
@@ -62,6 +53,22 @@ pub trait GameBoard {
         let distance = start.distance_to(&pos, way);
         Ok(Hit { pos, distance })
     }
+}
+
+
+pub trait GameBoardEditable: GameBoard {
+    fn clear(&mut self);
+    
+    fn put_wall(&mut self, pos: &Pos, way: Way) -> Result<(), BoardError>;
+}
+
+
+#[derive(Debug, Clone)]
+pub struct MovePossibility {
+    pub up: bool,
+    pub down: bool,
+    pub left: bool,
+    pub right: bool,
 }
 
 

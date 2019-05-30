@@ -1,10 +1,10 @@
-use crate::board::{GameBoard, BoardByHashMap, BoardByIndirectTable};
+use crate::board::{GameBoardEditable, BoardByHashMap, BoardByIndirectTable};
 use crate::robot::{Robot, RobotId};
 use crate::positionning::{Pos, Way};
 
 
 pub struct GameWorld {
-    pub board: Box<dyn GameBoard>,
+    pub board: Box<dyn GameBoardEditable>,
     pub robots: [Robot; 4],
 }
 
@@ -17,7 +17,12 @@ pub enum InvalidCommand {
 
 impl GameWorld {
     pub fn new() -> GameWorld {
-        let board = Box::new(BoardByIndirectTable::new(16, 16).expect("valid dimension"));
+        let mut board = Box::new(BoardByIndirectTable::new(16, 16).expect("valid dimension"));
+
+        board.put_wall(&Pos::new(4, 0), Way::Right).expect("valid position");
+        board.put_wall(&Pos::new(11, 0), Way::Right).expect("valid position");
+        board.put_wall(&Pos::new(2, 1), Way::Right).expect("valid position");
+        board.put_wall(&Pos::new(2, 1), Way::Down).expect("valid position");
         
         let robots = [
             Robot::new(RobotId::Red),

@@ -1,5 +1,5 @@
 use crate::positionning::{Pos, Way, Hit};
-use super::{BoardError, MovePossibility, GameBoard};
+use super::{BoardError, MovePossibility, GameBoard, GameBoardEditable};
 
 
 #[derive(Debug)]
@@ -15,12 +15,8 @@ impl BoardByIndirectTable {
     #[allow(dead_code)]
     pub fn new(rows: isize, columns: isize) -> Result<BoardByIndirectTable, BoardError> {
         if rows >= 2 && columns >= 2 {
-            let mut walls_to_move_on_x: Vec<Vec<isize>> = (0..rows).map(|_| Vec::new()).collect();
-            let mut walls_to_move_on_y: Vec<Vec<isize>> = (0..columns).map(|_| Vec::new()).collect();
-
-            walls_to_move_on_x[0].extend(&[4, 11]);
-            walls_to_move_on_x[1].extend(&[2]);
-            walls_to_move_on_y[2].extend(&[1]);
+            let walls_to_move_on_x = (0..rows).map(|_| Vec::new()).collect();
+            let walls_to_move_on_y = (0..columns).map(|_| Vec::new()).collect();
             
             Ok(BoardByIndirectTable { walls_to_move_on_x, walls_to_move_on_y })
         } else {
@@ -45,6 +41,30 @@ impl BoardByIndirectTable {
         if y >= 0 { 
             self.walls_to_move_on_x
                 .get(y as usize)
+                .ok_or(BoardError::InvalidPosition)
+        }
+        else { 
+            Err(BoardError::InvalidPosition)
+        }
+    }
+
+
+    fn mut_column_at(&mut self, x: isize) -> Result<&mut Vec<isize>, BoardError> {
+        if x >= 0 { 
+            self.walls_to_move_on_y
+                .get_mut(x as usize)
+                .ok_or(BoardError::InvalidPosition)
+        }
+        else { 
+            Err(BoardError::InvalidPosition)
+        }
+    }
+
+
+    fn mut_row_at(&mut self, y: isize) -> Result<&mut Vec<isize>, BoardError> {
+        if y >= 0 { 
+            self.walls_to_move_on_x
+                .get_mut(y as usize)
                 .ok_or(BoardError::InvalidPosition)
         }
         else { 
@@ -128,5 +148,45 @@ impl GameBoard for BoardByIndirectTable {
                Hit{ pos, distance }
            })
            .unwrap_or(edge))
+    }
+}
+
+
+impl GameBoardEditable for BoardByIndirectTable {
+    fn clear(&mut self) {
+        let (columns, rows) = self.dim();
+        self.walls_to_move_on_x = (0..rows).map(|_| Vec::new()).collect();
+        self.walls_to_move_on_y = (0..columns).map(|_| Vec::new()).collect();
+    }
+    
+    fn put_wall(&mut self, pos: &Pos, way: Way) -> Result<(), BoardError> {
+        if !self.pos_exists(pos) {
+            return Err(BoardError::InvalidPosition);
+        }
+        
+        match way {
+            Way::Up => {
+                if pos.x != 0 {
+                    self.mut_column_at(pos.x)?.push(pos.y - 1);
+                }
+            },
+            Way::Down => {
+                if pos.x + 1 != self.row_count() {
+                    self.mut_column_at(pos.x)?.push(pos.y);
+                } 
+            },
+            Way::Left => {
+                if pos.y != 0 {
+                    self.mut_row_at(pos.y)?.push(pos.x - 1);
+                }
+            },
+            Way::Right => {
+                if pos.y + 1 != self.column_count() {
+                    self.mut_row_at(pos.y)?.push(pos.x);
+                } 
+            },
+        };
+        
+        Ok(())
     }
 }
