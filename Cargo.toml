@@ -9,6 +9,7 @@ edition = "2018"
 specs = "0.14"
 specs-derive = "0.4"
 rand = "0.6"
+serde = "1.0.91"
 
 [dependencies.sdl2]
 version = "0.32.2"

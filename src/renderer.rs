@@ -64,6 +64,8 @@ impl<'r> Renderer<'r> {
         // First, draw background
         let board_rect = self.paint_sprite(&SpriteId::DefaultBoard, geom, AspectRatio::KeepIn)?;
 
+        let (columns, rows) = world.board.dim();
+
         // Then, draw robots
         for robot in world.robots.iter() {
             let pos = match robot.pos.as_ref() {
@@ -71,14 +73,14 @@ impl<'r> Renderer<'r> {
                 None => continue
             };
                 
-            let x = pos.x as f32 * board_rect.width() as f32 / world.board.columns as f32;
-            let y = pos.y as f32 * board_rect.height() as f32 / world.board.rows as f32;
+            let x = pos.x as f32 * board_rect.width() as f32 / columns as f32;
+            let y = pos.y as f32 * board_rect.height() as f32 / rows as f32;
 
             let screen_rect = Rect::new(
                 board_rect.x() + x.floor() as i32,
                 board_rect.y() + y.floor() as i32,
-                (board_rect.width() as f32 / world.board.columns as f32).floor() as u32,
-                (board_rect.height() as f32 / world.board.rows as f32).floor() as u32,
+                (board_rect.width() as f32 / columns as f32).floor() as u32,
+                (board_rect.height() as f32 / rows as f32).floor() as u32,
                 );
         
             let _ = self.paint_sprite(
@@ -132,8 +134,8 @@ impl<'r> Renderer<'r> {
             let tm = self.draw_ctx.tm.borrow();
             let board_cell = tm.get_sprite(&SpriteId::CellBackground)?;
             format = tm.get_texture(board_cell)?.query().format;
-            width = board_cell.geom.width() * world.board.columns as u32;
-            height = board_cell.geom.height() * world.board.rows as u32;
+            width = board_cell.geom.width() * world.board.column_count() as u32;
+            height = board_cell.geom.height() * world.board.row_count() as u32;
         }
 
         let board = self.draw_ctx.create_texture(
@@ -157,18 +159,20 @@ impl<'r> Renderer<'r> {
         ) -> Result<(), String> 
         {
             let sprite_id = SpriteId::CellBackground;
+
+            let (columns, rows) = world.board.dim();
             
             let (width, height) = draw_ctx.canvas.output_size()?;
             let width = width as f32;
             let height = height as f32;
 
-            for y in 0..world.board.rows {
-                for x in 0..world.board.columns {
-                    let px = ((x as f32 / world.board.columns as f32) * width).floor();
-                    let py = ((y as f32 / world.board.rows as f32) * height).floor();
+            for y in 0..rows {
+                for x in 0..columns {
+                    let px = ((x as f32 / columns as f32) * width).floor();
+                    let py = ((y as f32 / rows as f32) * height).floor();
 
-                    let next_x = (((x as f32 + 1f32) / world.board.columns as f32) * width).floor();
-                    let next_y = (((y as f32 + 1f32) / world.board.rows as f32) * height).floor();
+                    let next_x = (((x as f32 + 1f32) / columns as f32) * width).floor();
+                    let next_y = (((y as f32 + 1f32) / rows as f32) * height).floor();
 
                     let geom = Rect::new(
                         px as i32, 
@@ -181,7 +185,7 @@ impl<'r> Renderer<'r> {
 
                     // walls
                     let board_pos = Pos::new(x, y);
-                    let moves = world.board.possible_moves(&board_pos);
+                    let moves = world.board.moves_from(&board_pos);
                     
                     match moves {
                         Ok(MovePossibility { down: false, right: false, .. }) => 

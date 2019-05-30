@@ -1,10 +1,10 @@
-use crate::board::Board;
+use crate::board::{GameBoard, BoardByHashMap};
 use crate::robot::{Robot, RobotId};
 use crate::positionning::{Pos, Way};
 
 
 pub struct GameWorld {
-    pub board: Board,
+    pub board: Box<dyn GameBoard>,
     pub robots: [Robot; 4],
 }
 
@@ -17,8 +17,8 @@ pub enum InvalidCommand {
 
 impl GameWorld {
     pub fn new() -> GameWorld {
-        //let board = Board::new_custom(8, 16).expect("valid dimension");
-        let board = Board::new_default();
+        //let board = Box::new(Board::new_custom(8, 16).expect("valid dimension"));
+        let board = Box::new(BoardByHashMap::new_default());
         let robots = [
             Robot::new(RobotId::Red),
             Robot::new(RobotId::Green),
@@ -46,9 +46,10 @@ impl GameWorld {
 
 
     pub fn find_start_pos(&self) -> Option<Pos> {
+        let (columns, rows) = self.board.dim();
         (0..1000)
-            .map(|_| Pos::rand(self.board.columns, self.board.rows))
-            .filter(|pos| self.board.is_start_pos(pos))
+            .map(|_| Pos::rand(columns, rows))
+            .filter(|pos| self.board.is_start_pos(pos).unwrap_or(false))
             .filter(|pos| self.robots.iter().all(|r| match r.pos {
                 Some(ref p) if p == pos => false,
                 _ => true
@@ -66,7 +67,10 @@ impl GameWorld {
             .take()
             .ok_or(InvalidCommand::NotPlayingRobot)?;
 
-        let mut hits = vec![self.board.hit_from(&start_pos, way)];
+        let mut hits = vec![
+            self.board.hit_from(&start_pos, way)
+                .expect("board can at least hit the wall")
+        ];
         hits.extend(
             self.robots.iter()
             .filter(|robot| robot.id != id)
