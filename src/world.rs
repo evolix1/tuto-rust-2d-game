@@ -21,8 +21,8 @@ pub enum InvalidCommand {
 
 impl GameWorld {
     pub fn new() -> GameWorld {
-        //let mut board = Box::new(BoardByIndirectTable::new());
-        let mut board = Box::new(BoardByIndividualCells::new());
+        let mut board = Box::new(BoardByIndirectTable::new());
+        //let mut board = Box::new(BoardByIndividualCells::new());
         board.reset(Dimensions{ rows: 16, columns: 16 }).expect("valid dimension");
 
         board.put_wall(&Pos::new(4, 0), Way::Right).expect("valid position");

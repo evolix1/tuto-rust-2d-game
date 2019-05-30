@@ -17,18 +17,32 @@ pub enum AspectRatio {
 }
 
 
-pub struct Renderer<'r> {
+pub struct RenderSettings {
     background_color: Color,
+    draw_walls_on_edge: bool,
+}
+
+
+impl RenderSettings {
+    pub fn new() -> RenderSettings {
+        RenderSettings {
+            background_color: Color::RGB(220, 10, 10),
+            draw_walls_on_edge: false,
+        }
+    }
+}
+
+
+pub struct Renderer<'r> {
+    settings: RenderSettings,
     draw_ctx: DrawContext<'r, 'r>,
 }
 
 
 impl<'r> Renderer<'r> {
     pub fn new(draw_ctx: DrawContext<'r, 'r>) -> Renderer<'r> {
-        Renderer {
-            background_color: Color::RGB(220, 10, 10),
-            draw_ctx,
-        }
+        let settings = RenderSettings::new();
+        Renderer { settings, draw_ctx, }
     }
 
     
@@ -41,7 +55,7 @@ impl<'r> Renderer<'r> {
 
     
     pub fn prepare(&mut self, world: &GameWorld) -> Result<(), String> {
-        self.draw_ctx.canvas.set_draw_color(self.background_color);
+        self.draw_ctx.canvas.set_draw_color(self.settings.background_color);
         self.draw_ctx.canvas.clear();
 
         // Initialise the first time only
@@ -138,12 +152,14 @@ impl<'r> Renderer<'r> {
             width = board_cell.geom.width() * dim.columns as u32;
             height = board_cell.geom.height() * dim.rows as u32;
         }
+                
+        let draw_walls_on_edge = self.settings.draw_walls_on_edge;
 
         let board = self.draw_ctx.create_texture(
             SpriteId::SizedBoard{ width, height },
             format, width, height,
             |ctx| {
-                Self::draw_board(ctx, world)
+                Self::draw_board(ctx, world, draw_walls_on_edge)
             })?;
         
         // Remember this sprite as being the default board sprite
@@ -157,6 +173,7 @@ impl<'r> Renderer<'r> {
     fn draw_board<'c, 't>(
         draw_ctx: &mut DrawContext<'c, 't>,
         world: &GameWorld,
+        draw_walls_on_edge: bool
         ) -> Result<(), String> 
         {
             let sprite_id = SpriteId::CellBackground;
@@ -180,33 +197,76 @@ impl<'r> Renderer<'r> {
                         py as i32, 
                         (next_x - px) as u32, 
                         (next_y - py) as u32);
+                    
+                    let mut moves = world.board
+                        .moves_from(&Pos::new(x, y))
+                        .unwrap_or_else(|_| MovePossibility::all());
+
+                    // If we don't have to paint walls next to an edge, 
+                    // This will simply re-enable moves, like if the user could
+                    // move through it.
+                    if !draw_walls_on_edge {
+                        moves.up |= y == 0;
+                        moves.down |= y + 1 == dim.rows;
+                        moves.left |= x == 0;
+                        moves.right |= x + 1 == dim.columns;
+                    }
+                    
 
                     // base (background)
                     draw_ctx.draw(&sprite_id, geom)?;
 
-                    // walls
-                    let board_pos = Pos::new(x, y);
-                    let moves = world.board.moves_from(&board_pos);
                     
-                    match moves {
-                        Ok(MovePossibility { down: false, right: false, .. }) => 
-                            draw_ctx.draw_transform(
-                                &SpriteId::SideWall(2), geom,
-                                RotateAngle::HalfTurn, FlipAxis::NoFlip)?,
-                        Ok(MovePossibility { left: false, .. }) => 
-                            draw_ctx.draw_transform(
-                                &SpriteId::SideWall(1), geom,
-                                RotateAngle::TurnRight, FlipAxis::NoFlip)?,
-                        Ok(MovePossibility { right: false, .. }) => 
-                            draw_ctx.draw_transform(
-                                &SpriteId::SideWall(1), geom,
-                                RotateAngle::TurnLeft, FlipAxis::NoFlip)?,
-                        Ok(MovePossibility { up: false, .. }) => 
-                            draw_ctx.draw_transform(
-                                &SpriteId::SideWall(1), geom,
-                                RotateAngle::NoTurn, FlipAxis::NoFlip)?,
-                        _ => (),
+                    // Walls between cells
+                    if !moves.left {
+                        draw_ctx.draw_transform(
+                            &SpriteId::SideWall, geom,
+                            RotateAngle::TurnRight, FlipAxis::NoFlip)?;
                     }
+                    if !moves.right {
+                        draw_ctx.draw_transform(
+                            &SpriteId::SideWall, geom,
+                            RotateAngle::TurnLeft, FlipAxis::NoFlip)?;
+                    }
+                    if !moves.up {
+                        draw_ctx.draw_transform(
+                            &SpriteId::SideWall, geom,
+                            RotateAngle::NoTurn, FlipAxis::NoFlip)?;
+                    }
+                    if !moves.down {
+                        draw_ctx.draw_transform(
+                            &SpriteId::SideWall, geom,
+                            RotateAngle::HalfTurn, FlipAxis::NoFlip)?;
+                    }
+
+                    
+                    // Corners
+                    let top_left = !moves.up || !moves.left;
+                    let top_right = !moves.up || !moves.right;
+                    let down_left = !moves.down || !moves.left;
+                    let down_right = !moves.down || !moves.right;
+                    
+                    if top_left {
+                        draw_ctx.draw_transform(
+                            &SpriteId::CornerWall, geom,
+                            RotateAngle::NoTurn, FlipAxis::NoFlip)?;
+                    }
+                    if top_right {
+                        draw_ctx.draw_transform(
+                            &SpriteId::CornerWall, geom,
+                            RotateAngle::TurnLeft, FlipAxis::NoFlip)?;
+                    }
+                    if down_left {
+                        draw_ctx.draw_transform(
+                            &SpriteId::CornerWall, geom,
+                            RotateAngle::TurnRight, FlipAxis::NoFlip)?;
+                    }
+                    if down_right {
+                        draw_ctx.draw_transform(
+                            &SpriteId::CornerWall, geom,
+                            RotateAngle::HalfTurn, FlipAxis::NoFlip)?;
+                    }
+                    
                 }
             }
 

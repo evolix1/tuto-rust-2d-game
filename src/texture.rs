@@ -35,7 +35,7 @@ pub enum SpriteId {
     DefaultBoard,
     // Corner overlay
     CornerWall,
-    SideWall(u8),
+    SideWall,
     //
     Robot(RobotId),
 }
@@ -173,9 +173,7 @@ impl<'t> TextureManager<'t> {
             SpriteId::Robot(RobotId::Yellow),
             SpriteId::CellBackground,
             SpriteId::CornerWall,
-            SpriteId::SideWall(1),
-            SpriteId::SideWall(2),
-            SpriteId::SideWall(3),
+            SpriteId::SideWall,
         ];
         
         for (i, id) in ids.into_iter().enumerate() {

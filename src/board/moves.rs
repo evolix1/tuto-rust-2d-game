@@ -24,7 +24,6 @@ impl MovePossibility {
         MovePossibility { up: true, down: true, left: true, right: true }
     }
 
-    #[allow(dead_code)]
     pub fn none() -> MovePossibility {
         MovePossibility { up: false, down: false, left: false, right: false }
     }
