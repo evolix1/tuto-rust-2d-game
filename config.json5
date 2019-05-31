@@ -1,0 +1,7 @@
+{
+    window: {
+        width: 1024,
+        height: 768,
+    },
+    assets_path: "./assets/all.svg",
+}

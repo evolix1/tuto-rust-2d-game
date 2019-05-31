@@ -1,8 +1,14 @@
 use std::time::Duration;
 
+use json5;
+use serde_derive;
+
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::image::{self, InitFlag};
+
+// Application related
+mod config;
 
 // Game & Entities related
 mod positionning;
@@ -16,11 +22,17 @@ mod renderer;
 
 
 fn main() -> Result<(), String> {
+    let config = config::load_default()?;
+    println!("Config: {:?}", config);
+
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
     let _image_context = image::init(InitFlag::PNG)?;
 
-    let window = video_subsystem.window("Ricochet robot", 800, 600)
+    let window = video_subsystem
+        .window("Ricochet robot", 
+                config.window.width as u32, 
+                config.window.height as u32)
         .position_centered()
         .resizable()
         .build()
