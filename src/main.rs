@@ -1,9 +1,5 @@
 use std::time::Duration;
 
-use json5;
-use serde_derive;
-use pest_derive;
-
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::image::{self, InitFlag};
