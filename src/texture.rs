@@ -11,6 +11,7 @@ use sdl2::image::LoadSurface;
 use sdl2::pixels::PixelFormatEnum;
 
 use crate::robot::RobotId;
+use crate::positionning::{RotateAngle, FlipAxis};
 
 
 pub struct DrawContext<'c, 't> {
@@ -45,23 +46,6 @@ pub enum SpriteId {
 pub struct Sprite {
     pub texture_index: usize,
     pub geom: Rect
-}
-        
-
-#[allow(dead_code)]
-pub enum FlipAxis {
-    NoFlip,
-    FlipHorizontal,
-    FlipVertical,
-    FlipBoth
-}
-
-#[allow(dead_code)]
-pub enum RotateAngle {
-    NoTurn,
-    TurnLeft,
-    TurnRight,
-    HalfTurn
 }
 
 

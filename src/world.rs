@@ -29,7 +29,7 @@ impl GameWorld {
         //let mut board: Box<dyn EditableBoard> = Box::new(BoardByIndividualCells::new());
         board.reset(Dimensions{ rows: 16, columns: 16 }).expect("valid dimension");
 
-        config.tiles[0].apply_on(&mut board, Border::TopLeft)
+        config.tiles[0].apply_on(&mut board, Border::TopRight)
             .expect("tile can be applied on board");
         
         let robots = [

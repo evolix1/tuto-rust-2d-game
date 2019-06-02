@@ -2,8 +2,8 @@ use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 
 use crate::world::GameWorld;
-use crate::texture::{DrawContext, SpriteId, FlipAxis, RotateAngle};
-use crate::positionning::Pos;
+use crate::texture::{DrawContext, SpriteId};
+use crate::positionning::{Pos, RotateAngle, FlipAxis};
 use crate::board::MovePossibility;
 
 

@@ -40,22 +40,20 @@ impl Board for BoardByIndividualCells {
 
 
     fn moves_from(&self, start: &Pos) -> Result<MovePossibility> {
-        if self.pos_exists(start) {
-            let mut moves = self.cells
-                .get(start)
-                .cloned()
-                .unwrap_or_else(MovePossibility::all);
-            
-            moves.up &= start.y > 0;
-            moves.down &= start.y + 1 < self.dim.rows;
-            moves.left &= start.x > 0;
-            moves.right &= start.x + 1 < self.dim.columns;
+        self.if_exists(start)
+            .map(|_| {
+                let mut moves = self.cells
+                    .get(start)
+                    .cloned()
+                    .unwrap_or_else(MovePossibility::all);
 
-            Ok(moves)
-        } 
-        else {
-            Err(Error::OutOfBoardPosition) 
-        }
+                moves.up &= start.y > 0;
+                moves.down &= start.y + 1 < self.dim.rows;
+                moves.left &= start.x > 0;
+                moves.right &= start.x + 1 < self.dim.columns;
+
+                moves
+            })
     }
 
 
@@ -102,8 +100,8 @@ impl EditableBoard for BoardByIndividualCells {
 
 
     fn put_wall(&mut self, pos: &Pos, way: Way) -> Result<()> {
-        if self.pos_exists(pos) {
-            match way {
+        self.if_exists(pos)
+            .map(|_| { match way {
                 Way::Up => {
                     if pos.x != 0 {
                         self.cells
@@ -152,10 +150,6 @@ impl EditableBoard for BoardByIndividualCells {
                             .left = false;
                     } 
                 },
-            };
-            Ok(())
-        } else {
-            Err(Error::OutOfBoardPosition)
-        }
+            }})
     }
 }

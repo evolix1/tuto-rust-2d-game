@@ -22,6 +22,25 @@ pub struct Hit {
     pub pos: Pos,
     pub distance: isize
 }
+        
+
+#[derive(Debug)]
+#[allow(dead_code)]
+pub enum FlipAxis {
+    NoFlip,
+    FlipHorizontal,
+    FlipVertical,
+    FlipBoth
+}
+
+#[derive(Debug)]
+#[allow(dead_code)]
+pub enum RotateAngle {
+    NoTurn,
+    TurnLeft,
+    TurnRight,
+    HalfTurn
+}
 
 
 impl Pos {
@@ -91,4 +110,32 @@ impl Pos {
             return None;
         }
     }
+}
+
+
+impl Way {
+    pub fn angle(&self, angle: RotateAngle) -> Way {
+        match (*self, angle) {
+            (Way::Up, RotateAngle::NoTurn) |
+            (Way::Down, RotateAngle::HalfTurn) |
+            (Way::Left, RotateAngle::TurnRight) |
+            (Way::Right, RotateAngle::TurnLeft)
+                => Way::Up,
+            (Way::Up, RotateAngle::HalfTurn) |
+            (Way::Down, RotateAngle::NoTurn) |
+            (Way::Left, RotateAngle::TurnLeft) |
+            (Way::Right, RotateAngle::TurnRight)
+                => Way::Down,
+            (Way::Up, RotateAngle::TurnLeft) |
+            (Way::Down, RotateAngle::TurnRight) |
+            (Way::Left, RotateAngle::NoTurn) |
+            (Way::Right, RotateAngle::HalfTurn)
+                => Way::Left,
+            (Way::Up, RotateAngle::TurnRight) |
+            (Way::Down, RotateAngle::TurnLeft) |
+            (Way::Left, RotateAngle::HalfTurn) |
+            (Way::Right, RotateAngle::NoTurn)
+                => Way::Right,
+        }
+     }
 }

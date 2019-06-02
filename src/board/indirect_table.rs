@@ -31,28 +31,30 @@ impl BoardByIndirectTable {
     fn column_at(&self, x: usize) -> Result<&Vec<usize>> {
         self.walls_to_move_on_y
             .get(x)
-            .ok_or(Error::OutOfBoardPosition)
+            .ok_or_else(|| self.oob_error(Pos::new(x, 0)))
     }
 
 
     fn row_at(&self, y: usize) -> Result<&Vec<usize>> {
         self.walls_to_move_on_x
             .get(y)
-            .ok_or(Error::OutOfBoardPosition)
+            .ok_or_else(|| self.oob_error(Pos::new(0, y)))
     }
 
 
     fn mut_column_at(&mut self, x: usize) -> Result<&mut Vec<usize>> {
+        let err = self.oob_error(Pos::new(x, 0));
         self.walls_to_move_on_y
             .get_mut(x)
-            .ok_or(Error::OutOfBoardPosition)
+            .ok_or(err)
     }
 
 
     fn mut_row_at(&mut self, y: usize) -> Result<&mut Vec<usize>> {
+        let err = self.oob_error(Pos::new(0, y));
         self.walls_to_move_on_x
             .get_mut(y)
-            .ok_or(Error::OutOfBoardPosition)
+            .ok_or(err)
     }
 
 
@@ -159,32 +161,32 @@ impl EditableBoard for BoardByIndirectTable {
 
 
     fn put_wall(&mut self, pos: &Pos, way: Way) -> Result<()> {
-        if self.pos_exists(pos) {
-            match way {
-                Way::Up => {
-                    if pos.x != 0 {
-                        self.mut_column_at(pos.x)?.push(pos.y - 1);
-                    }
-                },
-                Way::Down => {
-                    if pos.x + 1 != self.row_count() {
-                        self.mut_column_at(pos.x)?.push(pos.y);
-                    } 
-                },
-                Way::Left => {
-                    if pos.y != 0 {
-                        self.mut_row_at(pos.y)?.push(pos.x - 1);
-                    }
-                },
-                Way::Right => {
-                    if pos.y + 1 != self.column_count() {
-                        self.mut_row_at(pos.y)?.push(pos.x);
-                    } 
-                },
-            };
-            Ok(())
-        } else {
-            Err(Error::OutOfBoardPosition)
-        }
+        self.if_exists(pos)
+            .and_then(|_| {
+                match way {
+                    Way::Up => {
+                        if pos.x != 0 {
+                            self.mut_column_at(pos.x)?.push(pos.y - 1);
+                        }
+                    },
+                    Way::Down => {
+                        if pos.x + 1 != self.row_count() {
+                            self.mut_column_at(pos.x)?.push(pos.y);
+                        } 
+                    },
+                    Way::Left => {
+                        if pos.y != 0 {
+                            self.mut_row_at(pos.y)?.push(pos.x - 1);
+                        }
+                    },
+                    Way::Right => {
+                        if pos.y + 1 != self.column_count() {
+                            self.mut_row_at(pos.y)?.push(pos.x);
+                        } 
+                    },
+                }
+
+                Ok(())
+            })
     }
 }

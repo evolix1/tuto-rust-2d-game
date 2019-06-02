@@ -1,6 +1,6 @@
 use crate::positionning::{Pos, Way, Hit};
 
-use super::{Error, Result};
+use super::error::{Error, Result};
 use super::dim::Dimensions;
 use super::moves::MovePossibility;
 
@@ -25,33 +25,41 @@ pub trait Board {
 
     // Find the hit according only to board dimensions.
     fn side_hit(&self, start: &Pos, way: Way) -> Result<Hit> {
-        if self.pos_exists(start) {
-            let dim = self.dim();
-            assert!(dim.rows >= 1);
-            assert!(dim.columns >= 1);
-            
-            let pos = match way {
-                Way::Up => Pos::new(start.x, 0),
-                Way::Down => Pos::new(start.x, dim.rows - 1),
-                Way::Left => Pos::new(0, start.y),
-                Way::Right => Pos::new(dim.columns - 1, start.y),
-            };
+        self.if_exists(start)
+            .map(|_| {
+                let dim = self.dim();
+                assert!(dim.rows >= 1);
+                assert!(dim.columns >= 1);
 
-            let distance = start.distance_to(&pos, way);
-            Ok(Hit { pos, distance })
-        } 
-        else {
-            return Err(Error::OutOfBoardPosition);
-        }
+                let pos = match way {
+                    Way::Up => Pos::new(start.x, 0),
+                    Way::Down => Pos::new(start.x, dim.rows - 1),
+                    Way::Left => Pos::new(0, start.y),
+                    Way::Right => Pos::new(dim.columns - 1, start.y),
+                };
+
+                let distance = start.distance_to(&pos, way);
+                Hit { pos, distance }
+            })
+    }
+
+    fn oob_error(&self, pos: Pos) -> Error {
+        let dim = self.dim();
+        Error::OutOfBoardPosition{ pos, dim }
+    }
+
+    fn if_exists(&self, pos: &Pos) -> Result<()> {
+        if self.pos_exists(&pos) { Ok(()) }
+        else { Err(self.oob_error(pos.clone())) }
     }
 }
 
 
 pub trait EditableBoard: Board {
     fn reset(&mut self, dim: Dimensions) -> Result<()>;
-    
+
     fn put_wall(&mut self, pos: &Pos, way: Way) -> Result<()>;
-    
+
     fn put_walls(&mut self, pos: &Pos, ways: &[Way]) -> Result<()> {
         for way in ways {
             self.put_wall(pos, *way)?;
