@@ -2,11 +2,13 @@ mod error;
 mod board;
 mod moves;
 mod dim;
+mod tile;
 
 pub use self::error::{Error, Result};
 pub use self::board::{Board, EditableBoard};
 pub use self::moves::MovePossibility;
 pub use self::dim::Dimensions;
+pub use self::tile::{Tile, Border};
 
 
 // Boards implementation

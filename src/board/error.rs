@@ -2,6 +2,8 @@
 pub enum Error {
     DimensionsNotSuitableForBoard,
     OutOfBoardPosition,
+    InvalidTileStructure(String),
+    TileDimensionsDoNotMatchContent(String),
 }
 
 

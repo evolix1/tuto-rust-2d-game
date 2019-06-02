@@ -3,9 +3,12 @@ use crate::board::{
     EditableBoard, 
     Dimensions,
     BoardByIndividualCells, 
-    BoardByIndirectTable};
+    BoardByIndirectTable,
+    Border,
+};
 use crate::robot::{Robot, RobotId};
 use crate::positionning::{Pos, Way};
+use crate::config::AppConfig;
 
 
 pub struct GameWorld {
@@ -21,15 +24,13 @@ pub enum InvalidCommand {
 
 
 impl GameWorld {
-    pub fn new() -> GameWorld {
-        let mut board = Box::new(BoardByIndirectTable::new());
-        //let mut board = Box::new(BoardByIndividualCells::new());
+    pub fn new(config: &AppConfig) -> GameWorld {
+        let mut board: Box<dyn EditableBoard> = Box::new(BoardByIndirectTable::new());
+        //let mut board: Box<dyn EditableBoard> = Box::new(BoardByIndividualCells::new());
         board.reset(Dimensions{ rows: 16, columns: 16 }).expect("valid dimension");
 
-        board.put_wall(&Pos::new(4, 0), Way::Right).expect("valid position");
-        board.put_wall(&Pos::new(11, 0), Way::Right).expect("valid position");
-        board.put_wall(&Pos::new(2, 1), Way::Right).expect("valid position");
-        board.put_wall(&Pos::new(2, 1), Way::Down).expect("valid position");
+        config.tiles[0].apply_on(&mut board, Border::TopLeft)
+            .expect("tile can be applied on board");
         
         let robots = [
             Robot::new(RobotId::Red),

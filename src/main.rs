@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use json5;
 use serde_derive;
+use pest_derive;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -50,7 +51,7 @@ fn main() -> Result<(), String> {
     
     let mut renderer = renderer::Renderer::new(draw_ctx);
     
-    let mut world = world::GameWorld::new();
+    let mut world = world::GameWorld::new(&config);
     world.reset_rand_pos();
 
     let mut event_pump = sdl_context.event_pump()?;

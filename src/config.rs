@@ -4,12 +4,15 @@ use std::io::Read;
 
 use serde_derive::Deserialize;
 
+use crate::board;
+
 
 #[derive(Debug, Deserialize)]
 pub struct AppConfig {
     #[serde(default)]
     pub window: WindowConfig,
     pub assets_path: String,
+    pub tiles: Vec<board::Tile>,
 }
 
 

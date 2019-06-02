@@ -1,0 +1,8 @@
+ws = _{ " " | "\t" } 				// inline whitespace
+lb = _{ "\n" | "\r" | "\r\n" }		// line breakers
+spaces = _{ ws | lb }
+cell_state =  { "." }
+v_wall = { "|" }
+h_wall = { "_" }
+cell = _{ cell_state ~ h_wall? ~ v_wall? }
+content = _{ spaces* ~ (cell | spaces)* }

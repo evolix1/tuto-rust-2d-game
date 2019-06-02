@@ -1,0 +1,8 @@
+ws = _{ " " | "\t" } 				// inline whitespace
+lb = _{ "\n" | "\r" | "\r\n" }		// line breakers
+cell_state =  { "." }
+v_wall = { "|" }
+h_wall = { "_" }
+cell = _{ (cell_state ~ h_wall? ~ v_wall?) ~ ws* }
+row = { ws* ~ cell+ }
+table = _{ (ws* ~ lb)* ~ row ~ (lb ~ (row | ws*))* }
