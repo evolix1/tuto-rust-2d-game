@@ -165,22 +165,22 @@ impl EditableBoard for BoardByIndirectTable {
             .and_then(|_| {
                 match way {
                     Way::Up => {
-                        if pos.x != 0 {
+                        if pos.y != 0 {
                             self.mut_column_at(pos.x)?.push(pos.y - 1);
                         }
                     },
                     Way::Down => {
-                        if pos.x + 1 != self.row_count() {
+                        if pos.y + 1 != self.row_count() {
                             self.mut_column_at(pos.x)?.push(pos.y);
                         } 
                     },
                     Way::Left => {
-                        if pos.y != 0 {
+                        if pos.x != 0 {
                             self.mut_row_at(pos.y)?.push(pos.x - 1);
                         }
                     },
                     Way::Right => {
-                        if pos.y + 1 != self.column_count() {
+                        if pos.x + 1 != self.column_count() {
                             self.mut_row_at(pos.y)?.push(pos.x);
                         } 
                     },

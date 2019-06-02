@@ -103,7 +103,7 @@ impl EditableBoard for BoardByIndividualCells {
         self.if_exists(pos)
             .map(|_| { match way {
                 Way::Up => {
-                    if pos.x != 0 {
+                    if pos.y != 0 {
                         self.cells
                             .entry(pos.clone())
                             .or_insert_with(MovePossibility::all)
@@ -115,7 +115,7 @@ impl EditableBoard for BoardByIndividualCells {
                     }
                 },
                 Way::Down => {
-                    if pos.x + 1 != self.dim.rows {
+                    if pos.y + 1 != self.dim.rows {
                         self.cells
                             .entry(pos.clone())
                             .or_insert_with(MovePossibility::all)
@@ -127,7 +127,7 @@ impl EditableBoard for BoardByIndividualCells {
                     } 
                 },
                 Way::Left => {
-                    if pos.y != 0 {
+                    if pos.x != 0 {
                         self.cells
                             .entry(pos.clone())
                             .or_insert_with(MovePossibility::all)
@@ -139,7 +139,7 @@ impl EditableBoard for BoardByIndividualCells {
                     }
                 },
                 Way::Right => {
-                    if pos.y + 1 != self.dim.columns {
+                    if pos.x + 1 != self.dim.columns {
                         self.cells
                             .entry(pos.clone())
                             .or_insert_with(MovePossibility::all)
