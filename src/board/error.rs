@@ -1,5 +1,6 @@
 use crate::positionning::Pos;
-use super::dim::Dimensions;
+use crate::dim::Dimensions;
+
 
 #[derive(Debug)]
 pub enum Error {

@@ -50,7 +50,7 @@ pub fn load_default() -> Result<AppConfig, String> {
 
 
 pub fn load(path: &Path) -> Result<AppConfig, String> {
-    File::open(path)
+    let mut config: AppConfig = File::open(path)
         .and_then(|mut file| {
             let mut content = String::new();
             file.read_to_string(&mut content)
@@ -66,5 +66,12 @@ pub fn load(path: &Path) -> Result<AppConfig, String> {
             .map_err(|e| match e {
                 json5::Error::Message(m) => m
             })
-        )
+        )?;
+
+    // manually load tiles
+    for tile in config.tiles.iter_mut() {
+        tile.parse().map_err(|e| format!("{:?}", e))?;
+    }
+
+    Ok(config)
 }

@@ -1,8 +1,8 @@
 use crate::positionning::{Pos, Way, Hit};
+use crate::moves::MovePossibility;
+use crate::dim::Dimensions;
 
 use super::error::{Error, Result};
-use super::moves::MovePossibility;
-use super::dim::Dimensions;
 use super::board::{Board, EditableBoard};
 
 

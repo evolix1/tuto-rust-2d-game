@@ -7,8 +7,12 @@ use sdl2::image::{self, InitFlag};
 // Application related
 mod config;
 
-// Game & Entities related
+// Math & Abstract
 mod positionning;
+mod moves;
+mod dim;
+
+// Game & Entities related
 mod board;
 mod world;
 mod robot;
@@ -20,7 +24,6 @@ mod renderer;
 
 fn main() -> Result<(), String> {
     let config = config::load_default()?;
-    println!("Config: {:?}", config);
 
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;

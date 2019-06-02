@@ -1,14 +1,15 @@
+use crate::dim::Dimensions;
+use crate::robot::{Robot, RobotId};
+use crate::positionning::{Pos, Way};
+use crate::config::AppConfig;
+
 #[allow(unused_imports)]
 use crate::board::{
     EditableBoard, 
-    Dimensions,
     BoardByIndividualCells, 
     BoardByIndirectTable,
     Border,
 };
-use crate::robot::{Robot, RobotId};
-use crate::positionning::{Pos, Way};
-use crate::config::AppConfig;
 
 
 pub struct GameWorld {
@@ -29,6 +30,7 @@ impl GameWorld {
         //let mut board: Box<dyn EditableBoard> = Box::new(BoardByIndividualCells::new());
         board.reset(Dimensions{ rows: 16, columns: 16 }).expect("valid dimension");
 
+        // NOTE: this is temporary
         config.tiles[0].apply_on(&mut board, Border::TopLeft)
             .expect("tile can be applied on board");
         config.tiles[0].apply_on(&mut board, Border::TopRight)

@@ -1,8 +1,9 @@
 use crate::positionning::{Pos, Way, Hit};
 
+use crate::dim::Dimensions;
+use crate::moves::MovePossibility;
+
 use super::error::{Error, Result};
-use super::dim::Dimensions;
-use super::moves::MovePossibility;
 
 
 pub trait Board {

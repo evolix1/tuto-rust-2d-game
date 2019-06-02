@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
 use crate::positionning::{Pos, Way, Hit};
+use crate::dim::Dimensions;
+use crate::moves::MovePossibility;
 
-use super::dim::Dimensions;
 use super::error::{Error, Result};
-use super::moves::MovePossibility;
 use super::board::{Board, EditableBoard};
 
 

@@ -4,7 +4,7 @@ use sdl2::pixels::Color;
 use crate::world::GameWorld;
 use crate::texture::{DrawContext, SpriteId};
 use crate::positionning::{Pos, RotateAngle, FlipAxis};
-use crate::board::MovePossibility;
+use crate::moves::MovePossibility;
 
 
 #[allow(dead_code)]

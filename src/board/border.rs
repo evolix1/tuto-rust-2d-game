@@ -1,6 +1,5 @@
 use crate::positionning::{Pos, Way, RotateAngle};
-
-use super::dim::Dimensions;
+use crate::dim::Dimensions;
 
 
 #[derive(Debug)]
@@ -15,13 +14,13 @@ pub enum Border {
 impl Border {
     pub fn angle(
         &self, 
-        pos: Pos, 
-        way: Way, 
+        pos: &Pos, 
+        way: &Way, 
         board_dim: &Dimensions
         ) -> (Pos, Way) 
     {
         match *self {
-            Border::TopLeft => (pos, way),
+            Border::TopLeft => (pos.clone(), way.clone()),
             Border::TopRight => {
                 let pos = Pos::new(
                     board_dim.columns - pos.y - 1,
