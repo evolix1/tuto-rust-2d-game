@@ -21,6 +21,8 @@ pub struct Tile {
 }
 
 
+// NOTE: By default, tile are considered to be `Border::TopLeft`.
+
 impl Tile {
     pub fn apply_on<T>(&self, board: &mut T, border: Border) -> Result<()> 
         where T: AsMut<dyn EditableBoard>
