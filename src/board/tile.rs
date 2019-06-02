@@ -5,19 +5,11 @@ use pest::Parser;
 use pest_derive::Parser;
 
 use crate::positionning::{Pos, Way};
+
 use super::error::{Result, Error};
 use super::board::EditableBoard;
 use super::dim::Dimensions;
-
-
-#[derive(Debug)]
-#[allow(dead_code)]
-pub enum Border {
-    TopLeft,
-    TopRight,
-    DownLeft,
-    DownRight
-}
+use super::border::Border;
 
 
 #[derive(Debug, Deserialize)]
@@ -30,7 +22,7 @@ pub struct Tile {
 
 
 impl Tile {
-    pub fn apply_on<T>(&self, board: &mut T, _border: Border) -> Result<()> 
+    pub fn apply_on<T>(&self, board: &mut T, border: Border) -> Result<()> 
         where T: AsMut<dyn EditableBoard>
     {
         let board = board.as_mut();
@@ -39,7 +31,11 @@ impl Tile {
                 .map_err(|e| e.into())?
                 .into_iter()
                 .enumerate() {
+            
+            let (pos, way) = border.angle(pos, way, &board.dim());
+            
             println!("wall {:?}: {:?} {:?}", i, pos, way);
+            
             board.put_wall(&pos, way)
                 .expect("board can put a wall at given position");
         }
