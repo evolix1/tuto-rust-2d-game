@@ -1,7 +1,7 @@
 use crate::positionning::{Pos, Way, Hit};
-
 use crate::dim::Dimensions;
 use crate::moves::MovePossibility;
+use crate::wall::Wall;
 
 use super::error::{Error, Result};
 
@@ -59,13 +59,5 @@ pub trait Board {
 pub trait EditableBoard: Board {
     fn reset(&mut self, dim: Dimensions) -> Result<()>;
 
-    fn put_wall(&mut self, pos: &Pos, way: Way) -> Result<()>;
-
-    fn put_walls(&mut self, pos: &Pos, ways: &[Way]) -> Result<()> {
-        for way in ways {
-            self.put_wall(pos, *way)?;
-        }
-
-        Ok(())
-    }
+    fn put_wall(&mut self, wall: &Wall) -> Result<()>;
 }

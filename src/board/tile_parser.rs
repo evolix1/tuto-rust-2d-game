@@ -3,8 +3,9 @@ use std::fmt;
 use pest::Parser;
 use pest_derive::Parser;
 
-use crate::positionning::{Pos, Way};
+use crate::positionning::Pos;
 use crate::dim::Dimensions;
+use crate::wall::{Wall, Side};
 
 use super::error::Error;
 
@@ -32,7 +33,7 @@ impl TileParser {
     
     
     // NOTE: make it an actual iterator
-    pub fn all(&mut self) -> std::result::Result<Vec<(Pos, Way)>, ParseError> {
+    pub fn all(&mut self) -> std::result::Result<Vec<Wall>, ParseError> {
         let mut res = Vec::new();
         let pairs = 
             Self::parse(Rule::content, &self.text)
@@ -75,10 +76,19 @@ impl TileParser {
                         y += 1;
                     }
                 },
-                // NOTE: `x` is 1-offseted, because it is incremented before 
-                // we hit a wall.
-                Rule::v_wall => res.push((Pos::new(x - 1, y), Way::Right)),
-                Rule::h_wall => res.push((Pos::new(x - 1, y), Way::Down)),
+                // NOTE: `x` represent current column, but it starts with 0 
+                // (and not -1). So it is 1-greater than it should be when we 
+                // encounter a wall.
+                Rule::v_wall => {
+                    let pos = Pos::new(x - 1, y);
+                    let side = Side::Right;
+                    res.push(Wall{ pos, side });
+                },
+                Rule::h_wall => {
+                    let pos = Pos::new(x - 1, y);
+                    let side = Side::Down;
+                    res.push(Wall{ pos, side });
+                },
                 _ => {
                     let tokens = vec![
                         "cell".into(), 

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::positionning::{Pos, Way, Hit};
 use crate::dim::Dimensions;
 use crate::moves::MovePossibility;
+use crate::wall::{Wall, Side};
 
 use super::error::{Error, Result};
 use super::board::{Board, EditableBoard};
@@ -99,53 +100,53 @@ impl EditableBoard for BoardByIndividualCells {
     }
 
 
-    fn put_wall(&mut self, pos: &Pos, way: Way) -> Result<()> {
-        self.if_exists(pos)
-            .map(|_| { match way {
-                Way::Up => {
-                    if pos.y != 0 {
+    fn put_wall(&mut self, wall: &Wall) -> Result<()> {
+        self.if_exists(&wall.pos)
+            .map(|_| { match wall.side {
+                Side::Up => {
+                    if wall.pos.y != 0 {
                         self.cells
-                            .entry(pos.clone())
+                            .entry(wall.pos.clone())
                             .or_insert_with(MovePossibility::all)
                             .up = false;
                         self.cells
-                            .entry(Pos::new(pos.x, pos.y - 1))
+                            .entry(Pos::new(wall.pos.x, wall.pos.y - 1))
                             .or_insert_with(MovePossibility::all)
                             .down = false;
                     }
                 },
-                Way::Down => {
-                    if pos.y + 1 != self.dim.rows {
+                Side::Down => {
+                    if wall.pos.y + 1 != self.dim.rows {
                         self.cells
-                            .entry(pos.clone())
+                            .entry(wall.pos.clone())
                             .or_insert_with(MovePossibility::all)
                             .down = false;
                         self.cells
-                            .entry(Pos::new(pos.x, pos.y + 1))
+                            .entry(Pos::new(wall.pos.x, wall.pos.y + 1))
                             .or_insert_with(MovePossibility::all)
                             .up = false;
                     } 
                 },
-                Way::Left => {
-                    if pos.x != 0 {
+                Side::Left => {
+                    if wall.pos.x != 0 {
                         self.cells
-                            .entry(pos.clone())
+                            .entry(wall.pos.clone())
                             .or_insert_with(MovePossibility::all)
                             .left = false;
                         self.cells
-                            .entry(Pos::new(pos.x - 1, pos.y))
+                            .entry(Pos::new(wall.pos.x - 1, wall.pos.y))
                             .or_insert_with(MovePossibility::all)
                             .right = false;
                     }
                 },
-                Way::Right => {
-                    if pos.x + 1 != self.dim.columns {
+                Side::Right => {
+                    if wall.pos.x + 1 != self.dim.columns {
                         self.cells
-                            .entry(pos.clone())
+                            .entry(wall.pos.clone())
                             .or_insert_with(MovePossibility::all)
                             .right = false;
                         self.cells
-                            .entry(Pos::new(pos.x + 1, pos.y))
+                            .entry(Pos::new(wall.pos.x + 1, wall.pos.y))
                             .or_insert_with(MovePossibility::all)
                             .left = false;
                     } 

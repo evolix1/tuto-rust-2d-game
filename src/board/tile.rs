@@ -1,7 +1,8 @@
 use serde_derive::Deserialize;
 
 use crate::dim::Dimensions;
-use crate::positionning::{Pos, Way};
+use crate::wall::Wall;
+use crate::positionning::{Pos, RotateAngle};
 
 use super::error::Result;
 use super::board::EditableBoard;
@@ -16,7 +17,7 @@ pub struct Tile {
     #[serde(rename = "tile")]
     pub as_string: Option<String>,
     #[serde(skip)]
-    walls: Option<Vec<(Pos, Way)>>,
+    walls: Option<Vec<Wall>>,
 }
 
 
@@ -28,13 +29,13 @@ impl Tile {
     {
         let no_walls = Vec::new();
         let board = board.as_mut();
-        
-        for (pos, way) in self.walls.as_ref().unwrap_or(&no_walls).iter() {
-            let (pos, way) = border.angle(pos, way, &board.dim());
-            board.put_wall(&pos, way)
+
+        for wall in self.walls.as_ref().unwrap_or(&no_walls).iter() {
+            let wall = self.situate_on_board(wall, &border, &board.dim());
+            board.put_wall(&wall)
                 .expect("board can put a wall at given position");
         }
-        
+
         Ok(())
     }
 
@@ -48,6 +49,38 @@ impl Tile {
 
     fn parser(&self) -> TileParser {
         TileParser::new(self.dim.clone(),
-                        self.as_string.clone().unwrap_or_else(String::new))
+        self.as_string.clone().unwrap_or_else(String::new))
+    }
+
+
+    fn situate_on_board(
+        &self, 
+        wall: &Wall,
+        border: &Border,
+        board_dim: &Dimensions) -> Wall {
+        match *border {
+            Border::TopLeft => wall.clone(),
+            Border::TopRight => {
+                let pos = Pos::new(
+                    board_dim.columns - wall.pos.y - 1,
+                    wall.pos.x);
+                let side = wall.side.rotate(RotateAngle::TurnRight);
+                Wall{ pos, side }
+            },
+            Border::BottomLeft => {
+                let pos = Pos::new(
+                    board_dim.columns - wall.pos.x - 1,
+                    board_dim.rows - wall.pos.y - 1);
+                let side = wall.side.rotate(RotateAngle::HalfTurn);
+                Wall{ pos, side }
+            },
+            Border::BottomRight => {
+                let pos = Pos::new(
+                    wall.pos.y,
+                    board_dim.rows - wall.pos.x - 1);
+                let side = wall.side.rotate(RotateAngle::TurnLeft);
+                Wall{ pos, side }
+            },
+        }
     }
 }

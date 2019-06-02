@@ -1,15 +1,6 @@
 use rand::{thread_rng, Rng};
 
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum Way {
-    Up,
-    Down,
-    Left,
-    Right
-}
-
-
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Pos {
     pub x: usize,
@@ -113,29 +104,46 @@ impl Pos {
 }
 
 
-impl Way {
-    pub fn angle(&self, angle: RotateAngle) -> Way {
-        match (*self, angle) {
-            (Way::Up, RotateAngle::NoTurn) |
-            (Way::Down, RotateAngle::HalfTurn) |
-            (Way::Left, RotateAngle::TurnRight) |
-            (Way::Right, RotateAngle::TurnLeft)
-                => Way::Up,
-            (Way::Up, RotateAngle::HalfTurn) |
-            (Way::Down, RotateAngle::NoTurn) |
-            (Way::Left, RotateAngle::TurnLeft) |
-            (Way::Right, RotateAngle::TurnRight)
-                => Way::Down,
-            (Way::Up, RotateAngle::TurnLeft) |
-            (Way::Down, RotateAngle::TurnRight) |
-            (Way::Left, RotateAngle::NoTurn) |
-            (Way::Right, RotateAngle::HalfTurn)
-                => Way::Left,
-            (Way::Up, RotateAngle::TurnRight) |
-            (Way::Down, RotateAngle::TurnLeft) |
-            (Way::Left, RotateAngle::HalfTurn) |
-            (Way::Right, RotateAngle::NoTurn)
-                => Way::Right,
+#[macro_export]
+macro_rules! impl_way {
+    ($name:ident) => {
+        #[derive(Debug, PartialEq, Clone, Copy)]
+        pub enum $name {
+            Up,
+            Down,
+            Left,
+            Right
         }
-     }
+
+
+        impl $name {
+            #[allow(dead_code)]
+            pub fn rotate(&self, angle: RotateAngle) -> $name {
+                match (*self, angle) {
+                    ($name::Up, RotateAngle::NoTurn) |
+                    ($name::Down, RotateAngle::HalfTurn) |
+                    ($name::Left, RotateAngle::TurnRight) |
+                    ($name::Right, RotateAngle::TurnLeft)
+                        => $name::Up,
+                    ($name::Up, RotateAngle::HalfTurn) |
+                    ($name::Down, RotateAngle::NoTurn) |
+                    ($name::Left, RotateAngle::TurnLeft) |
+                    ($name::Right, RotateAngle::TurnRight)
+                        => $name::Down,
+                    ($name::Up, RotateAngle::TurnLeft) |
+                    ($name::Down, RotateAngle::TurnRight) |
+                    ($name::Left, RotateAngle::NoTurn) |
+                    ($name::Right, RotateAngle::HalfTurn)
+                        => $name::Left,
+                    ($name::Up, RotateAngle::TurnRight) |
+                    ($name::Down, RotateAngle::TurnLeft) |
+                    ($name::Left, RotateAngle::HalfTurn) |
+                    ($name::Right, RotateAngle::NoTurn)
+                        => $name::Right,
+                }
+             }
+        }
+    }
 }
+
+impl_way!(Way);

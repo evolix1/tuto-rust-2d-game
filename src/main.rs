@@ -8,9 +8,11 @@ use sdl2::image::{self, InitFlag};
 mod config;
 
 // Math & Abstract
+#[macro_use]
 mod positionning;
 mod moves;
 mod dim;
+mod wall;
 
 // Game & Entities related
 mod board;

@@ -1,6 +1,7 @@
 use crate::positionning::{Pos, Way, Hit};
 use crate::moves::MovePossibility;
 use crate::dim::Dimensions;
+use crate::wall::{Wall, Side};
 
 use super::error::{Error, Result};
 use super::board::{Board, EditableBoard};
@@ -160,28 +161,28 @@ impl EditableBoard for BoardByIndirectTable {
     }
 
 
-    fn put_wall(&mut self, pos: &Pos, way: Way) -> Result<()> {
-        self.if_exists(pos)
+    fn put_wall(&mut self, wall: &Wall) -> Result<()> {
+        self.if_exists(&wall.pos)
             .and_then(|_| {
-                match way {
-                    Way::Up => {
-                        if pos.y != 0 {
-                            self.mut_column_at(pos.x)?.push(pos.y - 1);
+                match wall.side {
+                    Side::Up => {
+                        if wall.pos.y != 0 {
+                            self.mut_column_at(wall.pos.x)?.push(wall.pos.y - 1);
                         }
                     },
-                    Way::Down => {
-                        if pos.y + 1 != self.row_count() {
-                            self.mut_column_at(pos.x)?.push(pos.y);
+                    Side::Down => {
+                        if wall.pos.y + 1 != self.row_count() {
+                            self.mut_column_at(wall.pos.x)?.push(wall.pos.y);
                         } 
                     },
-                    Way::Left => {
-                        if pos.x != 0 {
-                            self.mut_row_at(pos.y)?.push(pos.x - 1);
+                    Side::Left => {
+                        if wall.pos.x != 0 {
+                            self.mut_row_at(wall.pos.y)?.push(wall.pos.x - 1);
                         }
                     },
-                    Way::Right => {
-                        if pos.x + 1 != self.column_count() {
-                            self.mut_row_at(pos.y)?.push(pos.x);
+                    Side::Right => {
+                        if wall.pos.x + 1 != self.column_count() {
+                            self.mut_row_at(wall.pos.y)?.push(wall.pos.x);
                         } 
                     },
                 }
