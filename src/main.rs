@@ -20,8 +20,7 @@ mod world;
 mod robot;
 
 // Draw related
-mod texture;
-mod renderer;
+mod graphics;
 
 
 fn main() -> Result<(), String> {
@@ -47,10 +46,10 @@ fn main() -> Result<(), String> {
         .expect("could not make a canvas");
     let creator = canvas.texture_creator();
 
-    let draw_ctx = texture::DrawContext::new(&mut canvas, &creator);
+    let draw_ctx = graphics::DrawContext::new(&mut canvas, &creator);
     draw_ctx.tm.borrow_mut().load_static(&config.assets_path)?;
 
-    let mut renderer = renderer::Renderer::new(draw_ctx);
+    let mut renderer = graphics::Renderer::new(draw_ctx);
 
     let mut world = world::GameWorld::new(&config);
     world.reset_rand_pos();
