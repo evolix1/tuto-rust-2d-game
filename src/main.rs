@@ -32,14 +32,14 @@ fn main() -> Result<(), String> {
     let _image_context = image::init(InitFlag::PNG)?;
 
     let window = video_subsystem
-        .window("Ricochet robot", 
-                config.window.width as u32, 
+        .window("Ricochet robot",
+                config.window.width as u32,
                 config.window.height as u32)
         .position_centered()
         .resizable()
         .build()
         .expect("could not initialize video subsystem");
-        
+
     let mut canvas = window
         .into_canvas()
         .present_vsync()
@@ -48,10 +48,10 @@ fn main() -> Result<(), String> {
     let creator = canvas.texture_creator();
 
     let draw_ctx = texture::DrawContext::new(&mut canvas, &creator);
-    draw_ctx.tm.borrow_mut().load_static()?;
-    
+    draw_ctx.tm.borrow_mut().load_static(&config.assets_path)?;
+
     let mut renderer = renderer::Renderer::new(draw_ctx);
-    
+
     let mut world = world::GameWorld::new(&config);
     world.reset_rand_pos();
 
