@@ -2,7 +2,7 @@ use crate::positionning::Pos;
 
 
 /// Robot identity (designated by color, like ghost in pacman)
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum RobotId {
     Red,
     Green,
