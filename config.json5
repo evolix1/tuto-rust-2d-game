@@ -3,7 +3,7 @@
         width: 1024,
         height: 768,
     },
-    assets_path: "./assets/all.png",
+    assets_path: "../../../assets/all.png",
     tiles: [{
         rows: 8,
         columns: 8,

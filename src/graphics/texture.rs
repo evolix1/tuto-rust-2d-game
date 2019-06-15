@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::PathBuf;
 
 use sdl2::rect::Rect;
 use sdl2::surface::Surface;
@@ -33,9 +33,9 @@ impl<'t> TextureManager<'t> {
         }
     }
 
-    pub fn load_static(&mut self, path: &str) -> Result<(), String> {
+    pub fn load_static(&mut self, path: &PathBuf) -> Result<(), String> {
         self.surfaces = vec![
-            Surface::from_file(&Path::new(path))?,
+            Surface::from_file(path)?,
         ];
 
         self.textures = vec![
