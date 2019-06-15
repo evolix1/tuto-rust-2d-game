@@ -18,6 +18,7 @@ mod wall;
 mod board;
 mod world;
 mod robot;
+mod keyboard_controller;
 
 // Draw related
 mod texture;
@@ -55,6 +56,8 @@ fn main() -> Result<(), String> {
     let mut world = world::GameWorld::new(&config);
     world.reset_rand_pos();
 
+    let mut kb_controller = keyboard_controller::KeyboardController::new();
+
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -66,19 +69,9 @@ fn main() -> Result<(), String> {
                 Event::KeyDown { keycode: Some(Keycode::R), repeat: false, .. } => {
                     world.reset_rand_pos();
                 },
-                Event::KeyDown { keycode: Some(Keycode::Up), repeat: false, .. } => {
-                    world.move_robot(robot::RobotId::Red, positionning::Way::Up)?;
+                _ => {
+                    kb_controller.process_event(&mut world, &event)?;
                 },
-                Event::KeyDown { keycode: Some(Keycode::Down), repeat: false, .. } => {
-                    world.move_robot(robot::RobotId::Red, positionning::Way::Down)?;
-                },
-                Event::KeyDown { keycode: Some(Keycode::Left), repeat: false, .. } => {
-                    world.move_robot(robot::RobotId::Red, positionning::Way::Left)?;
-                },
-                Event::KeyDown { keycode: Some(Keycode::Right), repeat: false, .. } => {
-                    world.move_robot(robot::RobotId::Red, positionning::Way::Right)?;
-                },
-                _ => {}
             }
         }
 
