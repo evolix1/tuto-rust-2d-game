@@ -1,7 +1,7 @@
 use sdl2::keyboard::Scancode;
 use sdl2::event::Event;
 
-use crate::world::{GameWorld, InvalidCommand};
+use crate::game_controller::{CommandResult, GameController};
 use crate::robot::RobotId;
 use crate::positionning::Way;
 
@@ -36,10 +36,10 @@ impl KeyboardController {
         }
     }
 
-    pub fn process_event(&mut self, world: &mut GameWorld, event: &Event) -> Result<bool, InvalidCommand> {
+    pub fn process_event(&mut self, game: &mut GameController, event: &Event) -> CommandResult<bool> {
         match event {
             Event::KeyDown { scancode: Some(scancode), repeat: false, .. } => {
-                self.process_keypress(world, scancode)
+                self.process_keypress(game, scancode)
             }
             _ => {
                 Ok(false)
@@ -47,9 +47,9 @@ impl KeyboardController {
         }
     }
 
-    pub fn process_keypress(&mut self, world: &mut GameWorld, scancode: &Scancode) -> Result<bool, InvalidCommand> {
+    pub fn process_keypress(&mut self, game: &mut GameController, scancode: &Scancode) -> CommandResult<bool> {
         if let Some(way) = self.way_from_scancode(scancode) {
-            world.move_robot(self.current_robot, way)?;
+            game.try_move_robot_in_dir(self.current_robot, way)?;
             Ok(true)
         }
         else if let Some(robot) = self.robot_from_scancode(scancode) {
