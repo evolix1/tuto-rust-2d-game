@@ -1,6 +1,5 @@
-use crate::positionning::{Pos, Way, Hit};
+use crate::positionning::{Pos, Way, Hit, SideLength};
 use crate::moves::MovePossibility;
-use crate::dim::Dimensions;
 use crate::wall::{Wall, Side};
 
 use super::error::{Error, Result};
@@ -72,11 +71,8 @@ impl BoardByIndirectTable {
 
 
 impl Board for BoardByIndirectTable {
-    fn dim(&self) -> Dimensions {
-        Dimensions {
-            rows: self.row_count(),
-            columns: self.column_count(),
-        }
+    fn side_length(&self) -> SideLength {
+        SideLength(self.row_count())
     }
 
     fn is_start_pos(&self, _pos: &Pos) -> Result<bool> {
@@ -149,10 +145,11 @@ impl Board for BoardByIndirectTable {
 
 impl EditableBoard for BoardByIndirectTable {
 
-    fn reset(&mut self, dim: &Dimensions) -> Result<()> {
-        if dim.rows >= 2 && dim.columns >= 2 {
-            self.walls_to_move_on_x = (0..dim.rows).map(|_| Vec::new()).collect();
-            self.walls_to_move_on_y = (0..dim.columns).map(|_| Vec::new()).collect();
+    fn reset(&mut self, side_length: &SideLength) -> Result<()> {
+        let side = side_length.0;
+        if side >= 2 {
+            self.walls_to_move_on_x = (0..side).map(|_| Vec::new()).collect();
+            self.walls_to_move_on_y = (0..side).map(|_| Vec::new()).collect();
             Ok(())
         } 
         else {

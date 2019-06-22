@@ -1,5 +1,4 @@
-use crate::positionning::{Pos, Way, Hit};
-use crate::dim::Dimensions;
+use crate::positionning::{Pos, Way, Hit, SideLength};
 use crate::moves::MovePossibility;
 use crate::wall::Wall;
 
@@ -7,12 +6,12 @@ use super::error::{Error, Result};
 
 
 pub trait Board {
-    fn dim(&self) -> Dimensions;
+    fn side_length(&self) -> SideLength;
 
     // Check if position exists on the board.
     fn pos_exists(&self, pos: &Pos) -> bool {
-        let dim = self.dim();
-        pos.x < dim.columns && pos.y < dim.rows
+        let side = self.side_length().0;
+        pos.x < side && pos.y < side
     }
     
     // Test whether the given position can be used to start a robot on.
@@ -24,19 +23,18 @@ pub trait Board {
     // Indicates the position of hit with the board content.
     fn hit_from(&self, start: &Pos, way: Way) -> Result<Hit>;
 
-    // Find the hit according only to board dimensions.
+    // Find the hit according only to board SideLength.
     fn side_hit(&self, start: &Pos, way: Way) -> Result<Hit> {
         self.if_exists(start)
             .map(|_| {
-                let dim = self.dim();
-                assert!(dim.rows >= 1);
-                assert!(dim.columns >= 1);
+                let side = self.side_length().0;
+                assert!(side >= 1);
 
                 let pos = match way {
                     Way::Up => Pos::new(start.x, 0),
-                    Way::Down => Pos::new(start.x, dim.rows - 1),
+                    Way::Down => Pos::new(start.x, side - 1),
                     Way::Left => Pos::new(0, start.y),
-                    Way::Right => Pos::new(dim.columns - 1, start.y),
+                    Way::Right => Pos::new(side - 1, start.y),
                 };
 
                 let distance = start.distance_to(&pos, way);
@@ -45,8 +43,8 @@ pub trait Board {
     }
 
     fn oob_error(&self, pos: Pos) -> Error {
-        let dim = self.dim();
-        Error::OutOfBoardPosition{ pos, dim }
+        let side_length = self.side_length();
+        Error::OutOfBoardPosition{ pos, side_length }
     }
 
     fn if_exists(&self, pos: &Pos) -> Result<()> {
@@ -57,7 +55,7 @@ pub trait Board {
 
 
 pub trait EditableBoard: Board {
-    fn reset(&mut self, dim: &Dimensions) -> Result<()>;
+    fn reset(&mut self, side_length: &SideLength) -> Result<()>;
 
     fn put_wall(&mut self, wall: &Wall) -> Result<()>;
 }

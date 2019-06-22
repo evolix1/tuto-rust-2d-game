@@ -1,7 +1,6 @@
 use std::fmt;
 
-use crate::positionning::Pos;
-use crate::dim::Dimensions;
+use crate::positionning::{Pos, SideLength};
 use crate::wall::{Wall, Side};
 
 use super::tile::Tile;
@@ -32,13 +31,15 @@ impl<'a> TileParser<'a> {
     
     
     // NOTE: make it an actual iterator
-    pub fn parse_all(&mut self, dim: &Dimensions) -> std::result::Result<Vec<Tile>, ParseError> {
+    pub fn parse_all(&mut self, side_length: &SideLength) -> std::result::Result<Vec<Tile>, ParseError> {
         self.texts.iter()
-            .map(|text| Self::parse(dim, text))
+            .map(|text| Self::parse(side_length, text))
             .collect::<std::result::Result<_, _>>()
     }
     
-    pub fn parse(dim: &Dimensions, text: &String) -> std::result::Result<Tile, ParseError> {
+    pub fn parse(side_length: &SideLength, text: &String) -> std::result::Result<Tile, ParseError> {
+        let side = side_length.0;
+        
         let mut walls = Vec::new();
         let mut row = 0;
         let mut column = 0;
@@ -46,12 +47,12 @@ impl<'a> TileParser<'a> {
         for item in text.as_bytes() {
             match *item as char {
                 '.' => {
-                    if row >= dim.rows {
-                        return Err(ParseError::TooLargeContent{ max_rows: dim.rows });
+                    if row >= side {
+                        return Err(ParseError::TooLargeContent{ max_rows: side });
                     }
                     
                     column += 1;
-                    if column == dim.columns {
+                    if column == side {
                         column = 0;
                         row += 1;
                     }
@@ -83,12 +84,12 @@ impl<'a> TileParser<'a> {
             }
         }
         
-        if row == dim.rows && column == 0 {
+        if row == side && column == 0 {
             Ok(Tile::new(walls))
         } 
         // missing some rows
-        else if row < dim.rows {
-            let missing = dim.rows - row;
+        else if row < side {
+            let missing = side - row;
             Err(ParseError::MissingRows{ last_row: row, missing })
         }
         else {

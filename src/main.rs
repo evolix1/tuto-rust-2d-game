@@ -12,7 +12,6 @@ mod config;
 #[macro_use]
 mod positionning;
 mod moves;
-mod dim;
 mod wall;
 
 // Game & Entities related

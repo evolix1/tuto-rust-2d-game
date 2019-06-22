@@ -19,7 +19,7 @@ impl Builder {
 
     
     pub fn build_on(&self, world: &mut GameWorld) {
-        world.board.reset(&self.config.board_dim)
+        world.board.reset(&self.config.board_side_length)
             .expect("valid dimension");
 
         // TODO error handling

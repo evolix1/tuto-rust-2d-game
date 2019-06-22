@@ -1,7 +1,6 @@
 use crate::wall::Wall;
 
-use crate::positionning::{Pos, RotateAngle};
-use crate::dim::Dimensions;
+use crate::positionning::{Pos, RotateAngle, SideLength};
 
 use super::error::Result;
 use super::board::EditableBoard;
@@ -25,7 +24,7 @@ impl Tile {
         let board = board.as_mut();
 
         for wall in self.0.iter() {
-            let wall = Self::situate_on_board(wall, border, &board.dim());
+            let wall = Self::situate_on_board(wall, border, &board.side_length());
             // TODO: better handling
             board.put_wall(&wall)
                 .expect("board can put a wall at given position");
@@ -37,27 +36,27 @@ impl Tile {
     fn situate_on_board(
         wall: &Wall,
         border: &Border,
-        board_dim: &Dimensions) -> Wall {
+        board_side: &SideLength) -> Wall {
         match *border {
             Border::TopLeft => wall.clone(),
             Border::TopRight => {
                 let pos = Pos::new(
-                    board_dim.columns - wall.pos.y - 1,
+                    board_side.0 - wall.pos.y - 1,
                     wall.pos.x);
                 let side = wall.side.rotate(RotateAngle::TurnRight);
                 Wall{ pos, side }
             },
             Border::BottomLeft => {
                 let pos = Pos::new(
-                    board_dim.columns - wall.pos.x - 1,
-                    board_dim.rows - wall.pos.y - 1);
+                    board_side.0 - wall.pos.x - 1,
+                    board_side.0 - wall.pos.y - 1);
                 let side = wall.side.rotate(RotateAngle::HalfTurn);
                 Wall{ pos, side }
             },
             Border::BottomRight => {
                 let pos = Pos::new(
                     wall.pos.y,
-                    board_dim.rows - wall.pos.x - 1);
+                    board_side.0 - wall.pos.x - 1);
                 let side = wall.side.rotate(RotateAngle::TurnLeft);
                 Wall{ pos, side }
             },

@@ -4,11 +4,9 @@
         height: 768,
     },
     assets_path: "../../../assets/all.png",
-    rows: 16,
-    columns: 16,
+    side_length: 16,
     tiles: [{
-        rows: 8,
-        columns: 8,
+        side_length: 8,
         sets: ["\
 . . .  . .|. . .\
 . . ._|. . . . .\
