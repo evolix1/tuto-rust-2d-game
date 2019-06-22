@@ -60,6 +60,12 @@ impl Game {
     }
 
 
+    pub fn clear_undo_stack(&mut self) {
+        self.undo_stack.clear();
+        self.redo_stack.clear();
+    }
+
+
     pub fn undo(&mut self) -> CommandResult<bool> {
         match self.undo_stack.pop() {
             Some(command) => {
@@ -85,5 +91,11 @@ impl Game {
                 Ok(false)
             }
         }
+    }
+
+
+    pub fn reset_rand_pos(&mut self) {
+        self.clear_undo_stack();
+        self.world.reset_rand_pos();
     }
 }

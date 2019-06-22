@@ -71,10 +71,10 @@ fn main() -> Result<(), String> {
                 Event::KeyDown { keycode: Some(Keycode::B), .. } => {
                     renderer.invalidate_board();
                     board_builder.build_on(&mut game.world);
-                    game.world.reset_rand_pos();
+                    game.reset_rand_pos();
                 },
                 Event::KeyDown { keycode: Some(Keycode::R), .. } => {
-                    game.world.reset_rand_pos();
+                    game.reset_rand_pos();
                 },
                 Event::KeyDown { keycode: Some(Keycode::PageUp), .. } => {
                     if !game.undo()? {
