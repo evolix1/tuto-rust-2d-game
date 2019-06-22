@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use crate::positionning::{Pos, Way, Hit};
-use crate::dim::Dimensions;
+use crate::positionning::{Pos, Way, Hit, SideLength};
 use crate::moves::MovePossibility;
 use crate::wall::{Wall, Side};
 
@@ -11,7 +10,7 @@ use super::board::{Board, EditableBoard};
 
 #[derive(Debug)]
 pub struct BoardByIndividualCells {
-    dim: Dimensions,
+    side_length: SideLength,
     cells: HashMap<Pos, MovePossibility>,
 }
 
@@ -21,7 +20,7 @@ impl BoardByIndividualCells {
     #[allow(dead_code)]
     pub fn new() -> BoardByIndividualCells {
         BoardByIndividualCells {
-            dim: Dimensions { rows: 0, columns: 0 },
+            side_length: SideLength(0),
             cells: HashMap::new(),
         }
     }
@@ -30,8 +29,8 @@ impl BoardByIndividualCells {
 
 
 impl Board for BoardByIndividualCells {
-    fn dim(&self) -> Dimensions {
-        self.dim.clone()
+    fn side_length(&self) -> SideLength {
+        self.side_length.clone()
     }
 
 
@@ -49,9 +48,9 @@ impl Board for BoardByIndividualCells {
                     .unwrap_or_else(MovePossibility::all);
 
                 moves.up &= start.y > 0;
-                moves.down &= start.y + 1 < self.dim.rows;
+                moves.down &= start.y + 1 < self.side_length.0;
                 moves.left &= start.x > 0;
-                moves.right &= start.x + 1 < self.dim.columns;
+                moves.right &= start.x + 1 < self.side_length.0;
 
                 moves
             })
@@ -88,10 +87,10 @@ impl Board for BoardByIndividualCells {
 
 impl EditableBoard for BoardByIndividualCells {
 
-    fn reset(&mut self, dim: &Dimensions) -> Result<()> {
-        if dim.rows >= 2 && dim.columns >= 2 {
+    fn reset(&mut self, side_length: &SideLength) -> Result<()> {
+        if side_length.0 >= 2 && side_length.0 >= 2 {
             self.cells.clear();
-            self.dim = dim.clone();
+            self.side_length = side_length.clone();
             Ok(())
         } 
         else {
@@ -116,7 +115,7 @@ impl EditableBoard for BoardByIndividualCells {
                     }
                 },
                 Side::Down => {
-                    if wall.pos.y + 1 != self.dim.rows {
+                    if wall.pos.y + 1 != self.side_length.0 {
                         self.cells
                             .entry(wall.pos.clone())
                             .or_insert_with(MovePossibility::all)
@@ -140,7 +139,7 @@ impl EditableBoard for BoardByIndividualCells {
                     }
                 },
                 Side::Right => {
-                    if wall.pos.x + 1 != self.dim.columns {
+                    if wall.pos.x + 1 != self.side_length.0 {
                         self.cells
                             .entry(wall.pos.clone())
                             .or_insert_with(MovePossibility::all)

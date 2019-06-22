@@ -72,9 +72,9 @@ impl GameWorld {
 
 
     pub fn find_start_pos(&self) -> Option<Pos> {
-        let dim = self.board.dim();
+        let side_length = self.board.side_length().0;
         (0..1000)
-            .map(|_| Pos::rand(dim.columns, dim.rows))
+            .map(|_| Pos::rand(side_length, side_length))
             .filter(|pos| self.board.is_start_pos(pos).unwrap_or(false))
             .filter(|pos| self.robots.iter().all(|r| match r.pos {
                 Some(ref p) if p == pos => false,

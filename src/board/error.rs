@@ -1,11 +1,10 @@
-use crate::positionning::Pos;
-use crate::dim::Dimensions;
+use crate::positionning::{Pos, SideLength};
 
 
 #[derive(Debug)]
 pub enum Error {
     DimensionsNotSuitableForBoard,
-    OutOfBoardPosition{ pos: Pos, dim: Dimensions },
+    OutOfBoardPosition{ pos: Pos, side_length: SideLength },
     EmptyTileSet,
     InvalidTileStructure(String),
     TileDimensionsDoNotMatchContent(String),

@@ -61,7 +61,8 @@ impl<'r> Renderer<'r> {
             geom, 
             AspectRatio::KeepIn)?;
 
-        let dim = world.board.dim();
+        let side = world.board.side_length().0;
+        let side_f = side as f32;
 
         // Then, draw robots
         for robot in world.robots.iter() {
@@ -70,14 +71,14 @@ impl<'r> Renderer<'r> {
                 None => continue
             };
                 
-            let x = pos.x as f32 * board_rect.width() as f32 / dim.columns as f32;
-            let y = pos.y as f32 * board_rect.height() as f32 / dim.rows as f32;
+            let x = pos.x as f32 * board_rect.width() as f32 / side_f;
+            let y = pos.y as f32 * board_rect.height() as f32 / side_f;
 
             let screen_rect = Rect::new(
                 board_rect.x() + x.floor() as i32,
                 board_rect.y() + y.floor() as i32,
-                (board_rect.width() as f32 / dim.columns as f32).floor() as u32,
-                (board_rect.height() as f32 / dim.rows as f32).floor() as u32,
+                (board_rect.width() as f32 / side_f).floor() as u32,
+                (board_rect.height() as f32 / side_f).floor() as u32,
                 );
         
             let _ = self.paint_sprite(
@@ -126,12 +127,12 @@ impl<'r> Renderer<'r> {
         let (format, width, height);
         
         {
-            let dim = world.board.dim();
+            let side = world.board.side_length().0 as u32;
             let tm = self.draw_ctx.tm.borrow();
             let board_cell = tm.get_sprite(&SpriteId::CellBackground)?;
             format = tm.get_texture(board_cell)?.query().format;
-            width = board_cell.geom.width() * dim.columns as u32;
-            height = board_cell.geom.height() * dim.rows as u32;
+            width = board_cell.geom.width() * side;
+            height = board_cell.geom.height() * side;
         }
                 
         let draw_walls_on_edge = self.settings.draw_walls_on_edge;
@@ -155,19 +156,20 @@ impl<'r> Renderer<'r> {
         {
             let sprite_id = SpriteId::CellBackground;
 
-            let dim = world.board.dim();
+            let side = world.board.side_length().0;
+            let side_f = side as f32;
             
             let (width, height) = draw_ctx.canvas.output_size()?;
             let width = width as f32;
             let height = height as f32;
 
-            for y in 0..dim.rows {
-                for x in 0..dim.columns {
-                    let px = ((x as f32 / dim.columns as f32) * width).floor();
-                    let py = ((y as f32 / dim.rows as f32) * height).floor();
+            for y in 0..side {
+                for x in 0..side {
+                    let px = ((x as f32 / side_f) * width).floor();
+                    let py = ((y as f32 / side_f) * height).floor();
 
-                    let next_x = (((x as f32 + 1f32) / dim.columns as f32) * width).floor();
-                    let next_y = (((y as f32 + 1f32) / dim.rows as f32) * height).floor();
+                    let next_x = (((x as f32 + 1f32) / side_f) * width).floor();
+                    let next_y = (((y as f32 + 1f32) / side_f) * height).floor();
 
                     let geom = Rect::new(
                         px as i32, 
@@ -184,9 +186,9 @@ impl<'r> Renderer<'r> {
                     // move through it.
                     if !draw_walls_on_edge {
                         moves.up |= y == 0;
-                        moves.down |= y + 1 == dim.rows;
+                        moves.down |= y + 1 == side;
                         moves.left |= x == 0;
-                        moves.right |= x + 1 == dim.columns;
+                        moves.right |= x + 1 == side;
                     }
                     
 

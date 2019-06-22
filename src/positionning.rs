@@ -1,5 +1,11 @@
 use rand::{thread_rng, Rng};
 
+use serde_derive::Deserialize;
+
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SideLength(pub usize);
+
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Pos {

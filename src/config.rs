@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 
 use serde_derive::Deserialize;
 
-use crate::dim::Dimensions;
+use crate::positionning::SideLength;
 use crate::board;
 
 
@@ -14,8 +14,8 @@ pub struct AppConfig {
     #[serde(default)]
     pub window: WindowConfig,
     pub assets_path: PathBuf,
-    #[serde(flatten)]
-    pub board_dim: Dimensions,
+    #[serde(rename = "side_length")]
+    pub board_side_length: SideLength,
     #[serde(rename = "tiles")]
     pub tile_sets: Vec<board::TileSet>,
 }
