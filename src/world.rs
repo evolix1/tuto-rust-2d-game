@@ -1,14 +1,11 @@
-use crate::dim::Dimensions;
 use crate::robot::{Robot, RobotId};
 use crate::positionning::{Pos, Way};
-use crate::config::AppConfig;
 
 #[allow(unused_imports)]
 use crate::board::{
     EditableBoard,
     BoardByIndividualCells,
     BoardByIndirectTable,
-    Border,
 };
 
 
@@ -25,20 +22,9 @@ pub enum InvalidCommand {
 
 
 impl GameWorld {
-    pub fn new(config: &AppConfig) -> GameWorld {
-        let mut board: Box<dyn EditableBoard> = Box::new(BoardByIndirectTable::new());
-        //let mut board: Box<dyn EditableBoard> = Box::new(BoardByIndividualCells::new());
-        board.reset(Dimensions{ rows: 16, columns: 16 }).expect("valid dimension");
-
-        // NOTE: this is temporary
-        config.tiles[0].apply_on(&mut board, Border::TopLeft)
-            .expect("tile can be applied on board");
-        config.tiles[0].apply_on(&mut board, Border::TopRight)
-            .expect("tile can be applied on board");
-        config.tiles[0].apply_on(&mut board, Border::BottomRight)
-            .expect("tile can be applied on board");
-        config.tiles[0].apply_on(&mut board, Border::BottomLeft)
-            .expect("tile can be applied on board");
+    pub fn new() -> GameWorld {
+        let board = Box::new(BoardByIndirectTable::new());
+        //let board = Box::new(BoardByIndividualCells::new());
 
         let robots = [
             Robot::new(RobotId::Red),

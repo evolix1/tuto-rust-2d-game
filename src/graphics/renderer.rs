@@ -30,18 +30,22 @@ impl<'r> Renderer<'r> {
     }
 
     
-    pub fn prepare(&mut self, world: &GameWorld) -> Result<(), String> {
+    fn prepare(&mut self, world: &GameWorld) -> Result<(), String> {
         self.draw_ctx.canvas.set_draw_color(self.settings.background_color);
         self.draw_ctx.canvas.clear();
 
-        // Initialise the first time only
-        if !self.draw_ctx.tm.borrow().sprite_exists(&SpriteId::DefaultBoard) {
+        // Initialise the first time only - or when board changes
+        if !self.draw_ctx.tm.borrow().sprite_exists(&SpriteId::CurrentBoard) {
             self.init_board(world)?;
         }
 
         Ok(())
     }
-    
+
+    pub fn invalidate_board(&mut self) {
+        self.draw_ctx.tm.borrow_mut()
+            .remove_sprite(&SpriteId::CurrentBoard);
+    }
     
     /**
      * Render all game items.
@@ -52,7 +56,10 @@ impl<'r> Renderer<'r> {
         let geom = Rect::new(10, 10, width - 20, height - 20);
 
         // First, draw background
-        let board_rect = self.paint_sprite(&SpriteId::DefaultBoard, geom, AspectRatio::KeepIn)?;
+        let board_rect = self.paint_sprite(
+            &SpriteId::CurrentBoard, 
+            geom, 
+            AspectRatio::KeepIn)?;
 
         let dim = world.board.dim();
 
@@ -83,8 +90,6 @@ impl<'r> Renderer<'r> {
     }
 
 
-    // Private API below
-    
     fn paint_sprite(
         &mut self, 
         id: &SpriteId, 
@@ -131,17 +136,13 @@ impl<'r> Renderer<'r> {
                 
         let draw_walls_on_edge = self.settings.draw_walls_on_edge;
 
-        let board = self.draw_ctx.create_texture(
-            SpriteId::SizedBoard{ width, height },
+        self.draw_ctx.create_texture(
+            SpriteId::CurrentBoard,
             format, width, height,
             |ctx| {
                 Self::draw_board(ctx, world, draw_walls_on_edge)
             })?;
         
-        // Remember this sprite as being the default board sprite
-        self.draw_ctx.tm.borrow_mut()
-            .set_sprite(SpriteId::DefaultBoard, board);
-
         Ok(())
     }
 

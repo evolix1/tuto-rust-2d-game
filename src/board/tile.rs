@@ -1,37 +1,32 @@
-use serde_derive::Deserialize;
-
-use crate::dim::Dimensions;
 use crate::wall::Wall;
+
 use crate::positionning::{Pos, RotateAngle};
+use crate::dim::Dimensions;
 
 use super::error::Result;
 use super::board::EditableBoard;
 use super::border::Border;
-use super::tile_parser::TileParser;
 
 
-#[derive(Debug, Deserialize)]
-pub struct Tile {
-    #[serde(flatten)]
-    pub dim: Dimensions,
-    #[serde(rename = "tile")]
-    pub as_string: Option<String>,
-    #[serde(skip)]
-    walls: Option<Vec<Wall>>,
-}
+#[derive(Debug, Default)]
+pub struct Tile(Vec<Wall>);
 
-
-// NOTE: By default, tile are considered to be `Border::TopLeft`.
 
 impl Tile {
-    pub fn apply_on<T>(&self, board: &mut T, border: Border) -> Result<()> 
+    // NOTE: By default, tile are considered to be `Border::TopLeft`.
+   
+    pub fn new(wall: Vec<Wall>) -> Tile {
+        Tile(wall)
+    }
+
+    pub fn apply_on<T>(&self, board: &mut T, border: &Border) -> Result<()> 
         where T: AsMut<dyn EditableBoard>
     {
-        let no_walls = Vec::new();
         let board = board.as_mut();
 
-        for wall in self.walls.as_ref().unwrap_or(&no_walls).iter() {
-            let wall = self.situate_on_board(wall, &border, &board.dim());
+        for wall in self.0.iter() {
+            let wall = Self::situate_on_board(wall, border, &board.dim());
+            // TODO: better handling
             board.put_wall(&wall)
                 .expect("board can put a wall at given position");
         }
@@ -39,22 +34,7 @@ impl Tile {
         Ok(())
     }
 
-
-    pub fn parse(&mut self) -> Result<()> {
-        self.walls = Some(self.parser().all().map_err(|e| e.into())?);
-        println!("walls {:?}", self.walls.as_ref().unwrap());
-        Ok(())
-    }
-
-
-    fn parser(&self) -> TileParser {
-        TileParser::new(self.dim.clone(),
-        self.as_string.clone().unwrap_or_else(String::new))
-    }
-
-
     fn situate_on_board(
-        &self, 
         wall: &Wall,
         border: &Border,
         board_dim: &Dimensions) -> Wall {

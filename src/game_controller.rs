@@ -1,4 +1,3 @@
-use crate::config::AppConfig;
 use crate::robot::RobotId;
 use crate::positionning::{Pos, Way};
 use crate::world::GameWorld;
@@ -51,9 +50,9 @@ pub struct GameController {
 
 
 impl GameController {
-    pub fn new(config: &AppConfig) -> GameController {
+    pub fn new() -> GameController {
         GameController {
-            world: GameWorld::new(config),
+            world: GameWorld::new(),
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),
         }

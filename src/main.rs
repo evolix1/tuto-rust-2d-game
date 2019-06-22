@@ -1,4 +1,5 @@
 use std::time::Duration;
+use std::rc::Rc;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -26,7 +27,7 @@ mod graphics;
 
 
 fn main() -> Result<(), String> {
-    let config = config::load_default()?;
+    let config = Rc::new(config::load_default()?);
 
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
@@ -53,7 +54,10 @@ fn main() -> Result<(), String> {
 
     let mut renderer = graphics::Renderer::new(draw_ctx);
 
-    let mut game = game_controller::GameController::new(&config);
+    let mut game = game_controller::GameController::new();
+
+    let board_builder = board::Builder::new(&config);
+    board_builder.build_on(&mut game.world);
     game.world.reset_rand_pos();
 
     let mut kb_controller = keyboard_controller::KeyboardController::new();
@@ -66,7 +70,12 @@ fn main() -> Result<(), String> {
                 | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running
                 },
-                Event::KeyDown { keycode: Some(Keycode::R), repeat: false, .. } => {
+                Event::KeyDown { keycode: Some(Keycode::B), .. } => {
+                    renderer.invalidate_board();
+                    board_builder.build_on(&mut game.world);
+                    game.world.reset_rand_pos();
+                },
+                Event::KeyDown { keycode: Some(Keycode::R), .. } => {
                     game.world.reset_rand_pos();
                 },
                 Event::KeyDown { keycode: Some(Keycode::PageUp), .. } => {
@@ -74,7 +83,7 @@ fn main() -> Result<(), String> {
                         println!("No more action to undo.");
                     }
                 }
-                Event::KeyDown { keycode: Some(Keycode::PageDonw), .. } => {
+                Event::KeyDown { keycode: Some(Keycode::PageDown), .. } => {
                     if !game.redo()? {
                         println!("No more action to redo.");
                     }

@@ -88,10 +88,10 @@ impl Board for BoardByIndividualCells {
 
 impl EditableBoard for BoardByIndividualCells {
 
-    fn reset(&mut self, dim: Dimensions) -> Result<()> {
+    fn reset(&mut self, dim: &Dimensions) -> Result<()> {
         if dim.rows >= 2 && dim.columns >= 2 {
             self.cells.clear();
-            self.dim = dim;
+            self.dim = dim.clone();
             Ok(())
         } 
         else {

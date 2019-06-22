@@ -6,6 +6,7 @@ use crate::dim::Dimensions;
 pub enum Error {
     DimensionsNotSuitableForBoard,
     OutOfBoardPosition{ pos: Pos, dim: Dimensions },
+    EmptyTileSet,
     InvalidTileStructure(String),
     TileDimensionsDoNotMatchContent(String),
 }

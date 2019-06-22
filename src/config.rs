@@ -5,6 +5,7 @@ use std::collections::VecDeque;
 
 use serde_derive::Deserialize;
 
+use crate::dim::Dimensions;
 use crate::board;
 
 
@@ -13,7 +14,10 @@ pub struct AppConfig {
     #[serde(default)]
     pub window: WindowConfig,
     pub assets_path: PathBuf,
-    pub tiles: Vec<board::Tile>,
+    #[serde(flatten)]
+    pub board_dim: Dimensions,
+    #[serde(rename = "tiles")]
+    pub tile_sets: Vec<board::TileSet>,
 }
 
 
@@ -76,9 +80,10 @@ pub fn load(path: &Path) -> Result<AppConfig, String> {
         })
         )?;
 
+    
     // manually load tiles
-    for tile in config.tiles.iter_mut() {
-        tile.parse().map_err(|e| format!("{:?}", e))?;
+    for tile_set in config.tile_sets.iter_mut() {
+        tile_set.parse().map_err(|e| format!("{:?}", e))?;
     }
 
     Ok(config)
