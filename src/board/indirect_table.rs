@@ -149,7 +149,7 @@ impl Board for BoardByIndirectTable {
 
 impl EditableBoard for BoardByIndirectTable {
 
-    fn reset(&mut self, dim: Dimensions) -> Result<()> {
+    fn reset(&mut self, dim: &Dimensions) -> Result<()> {
         if dim.rows >= 2 && dim.columns >= 2 {
             self.walls_to_move_on_x = (0..dim.rows).map(|_| Vec::new()).collect();
             self.walls_to_move_on_y = (0..dim.columns).map(|_| Vec::new()).collect();

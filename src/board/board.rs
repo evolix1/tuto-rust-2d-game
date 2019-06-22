@@ -57,7 +57,7 @@ pub trait Board {
 
 
 pub trait EditableBoard: Board {
-    fn reset(&mut self, dim: Dimensions) -> Result<()>;
+    fn reset(&mut self, dim: &Dimensions) -> Result<()>;
 
     fn put_wall(&mut self, wall: &Wall) -> Result<()>;
 }

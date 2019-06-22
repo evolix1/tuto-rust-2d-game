@@ -1,112 +1,95 @@
 use std::fmt;
 
-use pest::Parser;
-use pest_derive::Parser;
-
 use crate::positionning::Pos;
 use crate::dim::Dimensions;
 use crate::wall::{Wall, Side};
 
+use super::tile::Tile;
 use super::error::Error;
 
 
 pub enum ParseError {
-    BadSyntax(String), // NOTE: usage mainly to forward error from `pest`
-    UnexpectedToken{ tokens: Vec<String>, pos: usize },
+    UnexpectedToken{ 
+        unexpected: char, 
+        expected: Vec<String>, 
+        column: usize, 
+        row: usize 
+    },
     MissingRows{ last_row: usize, missing: usize },
     TooLargeContent{ max_rows: usize },
 }
 
 
-#[derive(Parser)]
-#[grammar = "board/tile.pest"]
-pub struct TileParser {
-    dim: Dimensions,
-    text: String,
+pub struct TileParser<'a> {
+    texts: &'a Vec<String>,
 }
 
 
-impl TileParser {
-    pub fn new(dim: Dimensions, text: String) -> TileParser {
-        TileParser { dim, text }
+impl<'a> TileParser<'a> {
+    pub fn new(texts: &'a Vec<String>) -> TileParser<'a> {
+        TileParser { texts }
     }
     
     
     // NOTE: make it an actual iterator
-    pub fn all(&mut self) -> std::result::Result<Vec<Wall>, ParseError> {
-        let mut res = Vec::new();
-        let pairs = 
-            Self::parse(Rule::content, &self.text)
-            .map_err(|e| ParseError::BadSyntax(format!("{:?}", e)))?;
+    pub fn parse_all(&mut self, dim: &Dimensions) -> std::result::Result<Vec<Tile>, ParseError> {
+        self.texts.iter()
+            .map(|text| Self::parse(dim, text))
+            .collect::<std::result::Result<_, _>>()
+    }
+    
+    pub fn parse(dim: &Dimensions, text: &String) -> std::result::Result<Tile, ParseError> {
+        let mut walls = Vec::new();
+        let mut row = 0;
+        let mut column = 0;
 
-        // NOTE: In case content is partially valid, `pest` will parse until
-        // it fails to recognise the content. So, this manually checks that
-        // we indeed parsed the whole content. Otherwise, we suppose it has 
-        // encountered an unexpected token.
-        {
-            let parsed_len = pairs.as_str().len();
-            if parsed_len != self.text.len() {
-                assert!(parsed_len < self.text.len());
-                let msg = format!(
-                    "parsing error, unexpected '{}' at pos {}",
-                    &self.text[parsed_len..=parsed_len],
-                    parsed_len);
-                return Err(ParseError::BadSyntax(msg));
-            }
-        }
-        
-        // NOTE: As of now, the input content is a string WITHOUT any line
-        // breaker (CR/LF). So, we cannot use them to count lines. Instead,
-        // it we simply count how many state we found, end break line when
-        // we reached out given dimensions for the tile.
-        let mut y = 0;
-        let mut x = 0;
-        
-        for item in pairs {
-            match item.as_rule() {
-                Rule::cell_state => {
-                    if y >= self.dim.rows {
-                        let max_rows = self.dim.rows;
-                        return Err(ParseError::TooLargeContent{ max_rows });
+        for item in text.as_bytes() {
+            match *item as char {
+                '.' => {
+                    if row >= dim.rows {
+                        return Err(ParseError::TooLargeContent{ max_rows: dim.rows });
                     }
                     
-                    x += 1;
-                    if x == self.dim.columns {
-                        x = 0;
-                        y += 1;
+                    column += 1;
+                    if column == dim.columns {
+                        column = 0;
+                        row += 1;
                     }
                 },
-                // NOTE: `x` represent current column, but it starts with 0 
-                // (and not -1). So it is 1-greater than it should be when we 
-                // encounter a wall.
-                Rule::v_wall => {
-                    let pos = Pos::new(x - 1, y);
+                '|' => {
+                    let pos = Pos::new(column - 1, row);
                     let side = Side::Right;
-                    res.push(Wall{ pos, side });
+                    walls.push(Wall{ pos, side });
                 },
-                Rule::h_wall => {
-                    let pos = Pos::new(x - 1, y);
+                '_' => {
+                    let pos = Pos::new(column - 1, row);
                     let side = Side::Down;
-                    res.push(Wall{ pos, side });
-                },
-                _ => {
-                    let tokens = vec![
+                    walls.push(Wall{ pos, side });
+                }
+                ' ' | '\t' | '\n' => {},
+                unexpected => {
+                    let expected = vec![
                         "cell".into(), 
                         "vertical wall".into(), 
                         "horizontal wall".into()];
-                    let pos = item.as_span().start();
-                    return Err(ParseError::UnexpectedToken{ tokens, pos });
+                    
+                    return Err(ParseError::UnexpectedToken{ 
+                        expected, 
+                        unexpected, 
+                        column,
+                        row
+                    });
                 },
             }
-        };
-
-        if y == self.dim.rows && x == 0 {
-            Ok(res)
+        }
+        
+        if row == dim.rows && column == 0 {
+            Ok(Tile::new(walls))
         } 
         // missing some rows
-        else if y < self.dim.rows {
-            let missing = self.dim.rows - y;
-            Err(ParseError::MissingRows{ last_row: y, missing })
+        else if row < dim.rows {
+            let missing = dim.rows - row;
+            Err(ParseError::MissingRows{ last_row: row, missing })
         }
         else {
             unreachable!("too large content error should have been returned earlier");
@@ -118,13 +101,13 @@ impl TileParser {
 impl fmt::Debug for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> std::result::Result<(), fmt::Error> {
         match &self {
-            &ParseError::BadSyntax(text) => 
-                write!(f, "{}", text),
-            &ParseError::UnexpectedToken{ tokens, pos } => 
+            &ParseError::UnexpectedToken{ expected, unexpected, row, column } => 
                 write!(f, 
-                        "expected token(s) '{}' at pos {}", 
-                        tokens.join("', '"),
-                        pos),
+                        "at {}:{} unexpected {} (wanted: {})", 
+                        row,
+                        column,
+                        unexpected,
+                        expected.join("', '")),
             &ParseError::MissingRows{ last_row, missing } =>
                 write!(f,
                        "missing {} row{} from the {}-th row in the tile to be complete", 
@@ -144,8 +127,7 @@ impl fmt::Debug for ParseError {
 impl Into<Error> for ParseError {
     fn into(self) -> Error {
         match &self {
-            &ParseError::BadSyntax(..)
-            | &ParseError::UnexpectedToken{..} => 
+            &ParseError::UnexpectedToken{..} =>
                 Error::InvalidTileStructure(format!("{:?}", self)),
             &ParseError::MissingRows{..}
             | &ParseError::TooLargeContent{..} =>

@@ -7,8 +7,7 @@ use crate::robot::RobotId;
 pub enum SpriteId {
     // Board management
     CellBackground,
-    SizedBoard { width: u32, height: u32 },
-    DefaultBoard,
+    CurrentBoard,
     // Corner overlay
     CornerWall,
     SideWall,

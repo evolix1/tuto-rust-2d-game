@@ -16,7 +16,7 @@ use super::sprite::{Sprite, SpriteId};
 pub struct TextureManager<'t> {
     creator: &'t TextureCreator<WindowContext>,
     surfaces: Vec<Surface<'t>>,
-    textures: Vec<Texture<'t>>,
+    textures: Vec<Option<Texture<'t>>>,
     sprites: HashMap<SpriteId, Sprite>,
 }
 
@@ -38,12 +38,13 @@ impl<'t> TextureManager<'t> {
             Surface::from_file(path)?,
         ];
 
-        self.textures = vec![
-            self.creator.create_texture_from_surface(&self.surfaces[0])
-                .map_err(|e| format!("{:?}", e))?,
-        ];
+        let texture = self.creator
+            .create_texture_from_surface(&self.surfaces[0])
+            .map_err(|e| format!("{:?}", e))?;
 
-        let side = self.textures[0].query().height;
+        let side = texture.query().height;
+
+        self.textures = vec![ Some(texture) ];
 
         let ids = vec![
             SpriteId::Robot(RobotId::Red),
@@ -69,13 +70,15 @@ impl<'t> TextureManager<'t> {
     // Texture management below
 
     pub fn add_texture(&mut self, texture: Texture<'t>) -> usize {
-        self.textures.push(texture);
+        self.textures.push(Some(texture));
         self.textures.len() - 1
     }
 
     pub fn get_texture(&self, sprite: &Sprite) -> Result<&Texture<'t>, String> {
-        self.textures.get(sprite.texture_index)
-            .ok_or_else(|| format!("missing texture"))
+        match self.textures.get(sprite.texture_index) {
+            Some(Some(ref texture)) => Ok(texture),
+            _ => Err(format!("missing texture"))
+        }
     }
 
     pub fn create_texture<F>(&mut self, format: F, width: u32, height: u32)
@@ -98,8 +101,10 @@ impl<'t> TextureManager<'t> {
         self.sprites.contains_key(id)
     }
 
-    pub fn set_sprite(&mut self, id: SpriteId, sprite: Sprite) {
-        self.sprites.insert(id, sprite);
+    pub fn remove_sprite(&mut self, id: &SpriteId) {
+        self.sprites.remove(id)
+            .and_then(|sprite| self.textures.get_mut(sprite.texture_index))
+            .map(|texture| *texture = None);
     }
 
     pub fn add_sprite_from_texture(&mut self, texture: Texture<'t>, id: SpriteId) -> Sprite {
