@@ -2,56 +2,20 @@ use crate::robot::RobotId;
 use crate::positionning::{Pos, Way};
 use crate::world::GameWorld;
 
-
-pub type CommandResult<T> = Result<T, String>;
-
-
-pub trait CommandBase {
-    fn redo(&self, game: &mut GameController) -> CommandResult<()>;
-    fn undo(&self, game: &mut GameController) -> CommandResult<()>;
-}
+use super::command::{Command, CommandResult};
+use super::move_robot_command::MoveRobotCommand;
 
 
-pub trait Command : std::fmt::Debug + CommandBase {
-}
-
-
-#[derive(Debug, Clone)]
-struct MoveRobotCommand {
-    robot: RobotId,
-    source_pos: Pos,
-    target_pos: Pos,
-}
-
-
-impl CommandBase for MoveRobotCommand {
-    fn redo(&self, game: &mut GameController) -> CommandResult<()> {
-        game.world.place_robot(self.robot, self.target_pos.clone());
-        // game.start_move_animation(self.robot, self.source_pos, self.target_pos);
-        Ok(())
-    }
-
-    fn undo(&self, game: &mut GameController) -> CommandResult<()> {
-        game.world.place_robot(self.robot, self.source_pos.clone());
-        // game.start_move_animation(self.robot, self.target_pos, self.source_pos);
-        Ok(())
-    }
-}
-
-
-impl Command for MoveRobotCommand {}
-
-
-pub struct GameController {
+pub struct Game {
     pub world: GameWorld,
     undo_stack: Vec<Box<dyn Command>>,
     redo_stack: Vec<Box<dyn Command>>,
 }
 
 
-impl GameController {
-    pub fn new() -> GameController {
-        GameController {
+impl Game {
+    pub fn new() -> Game {
+        Game {
             world: GameWorld::new(),
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),
@@ -78,11 +42,11 @@ impl GameController {
         let source_pos = self.world
             .robot_pos(robot)
             .ok_or("robot must be placed")?;
-        let command = MoveRobotCommand {
+        let command = MoveRobotCommand::new(
             robot,
             source_pos,
             target_pos,
-        };
+        );
 
         self.exec_command(Box::new(command))
     }

@@ -18,8 +18,7 @@ mod wall;
 mod board;
 mod world;
 mod robot;
-mod keyboard_controller;
-mod game_controller;
+mod game;
 
 // Draw related
 mod graphics;
@@ -53,13 +52,13 @@ fn main() -> Result<(), String> {
 
     let mut renderer = graphics::Renderer::new(draw_ctx);
 
-    let mut game = game_controller::GameController::new();
+    let mut game = game::Game::new();
 
     let board_builder = board::Builder::new(&config);
     board_builder.build_on(&mut game.world);
     game.world.reset_rand_pos();
 
-    let mut kb_controller = keyboard_controller::KeyboardController::new();
+    let mut kb_controller = game::KeyboardController::new();
 
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
