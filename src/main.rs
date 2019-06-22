@@ -20,6 +20,7 @@ mod board;
 mod world;
 mod robot;
 mod keyboard_controller;
+mod game_controller;
 
 // Draw related
 mod graphics;
@@ -53,10 +54,11 @@ fn main() -> Result<(), String> {
 
     let mut renderer = graphics::Renderer::new(draw_ctx);
 
+    let mut game = game_controller::GameController::new();
+
     let board_builder = board::Builder::new(&config);
-    let mut world = world::GameWorld::new();
-    board_builder.build_on(&mut world);
-    world.reset_rand_pos();
+    board_builder.build_on(&mut game.world);
+    game.world.reset_rand_pos();
 
     let mut kb_controller = keyboard_controller::KeyboardController::new();
 
@@ -70,19 +72,37 @@ fn main() -> Result<(), String> {
                 },
                 Event::KeyDown { keycode: Some(Keycode::B), .. } => {
                     renderer.invalidate_board();
-                    board_builder.build_on(&mut world);
-                    world.reset_rand_pos();
+                    board_builder.build_on(&mut game.world);
+                    game.world.reset_rand_pos();
                 },
                 Event::KeyDown { keycode: Some(Keycode::R), .. } => {
-                    world.reset_rand_pos();
+                    game.world.reset_rand_pos();
                 },
+                Event::KeyDown { keycode: Some(Keycode::PageUp), .. } => {
+                    if !game.undo()? {
+                        println!("No more action to undo.");
+                    }
+                }
+                Event::KeyDown { keycode: Some(Keycode::PageDown), .. } => {
+                    if !game.redo()? {
+                        println!("No more action to redo.");
+                    }
+                }
+                Event::KeyDown { keycode: Some(Keycode::Home), repeat: false, .. } => {
+                    while game.undo()? {
+                    }
+                }
+                Event::KeyDown { keycode: Some(Keycode::End), repeat: false, .. } => {
+                    while game.redo()? {
+                    }
+                }
                 _ => {
-                    kb_controller.process_event(&mut world, &event)?;
+                    kb_controller.process_event(&mut game, &event)?;
                 },
             }
         }
 
-        renderer.render(&world)?;
+        renderer.render(&game.world)?;
 
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 20));
     }

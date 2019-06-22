@@ -3,8 +3,8 @@ use crate::positionning::{Pos, Way};
 
 #[allow(unused_imports)]
 use crate::board::{
-    EditableBoard, 
-    BoardByIndividualCells, 
+    EditableBoard,
+    BoardByIndividualCells,
     BoardByIndirectTable,
 };
 
@@ -16,7 +16,7 @@ pub struct GameWorld {
 
 
 pub enum InvalidCommand {
-    /// Robot 
+    /// Robot
     NotPlayingRobot,
 }
 
@@ -25,18 +25,37 @@ impl GameWorld {
     pub fn new() -> GameWorld {
         let board = Box::new(BoardByIndirectTable::new());
         //let board = Box::new(BoardByIndividualCells::new());
-        
+
         let robots = [
             Robot::new(RobotId::Red),
             Robot::new(RobotId::Green),
             Robot::new(RobotId::Blue),
             Robot::new(RobotId::Yellow),
         ];
-        
+
         GameWorld {
             board,
             robots
         }
+    }
+
+
+    pub fn robot(&self, robot_id: RobotId) -> Option<&Robot> {
+        self.robots.iter()
+            .find(|ref robot| robot.id == robot_id)
+    }
+
+
+    pub fn robot_mut(&mut self, robot_id: RobotId) -> Option<&mut Robot> {
+        self.robots.iter_mut()
+            .find(|ref robot| robot.id == robot_id)
+    }
+
+
+    pub fn robot_pos(&self, robot_id: RobotId) -> Option<Pos> {
+        self.robot(robot_id)?
+            .pos
+            .clone()
     }
 
 
@@ -65,40 +84,30 @@ impl GameWorld {
     }
 
 
-    pub fn move_robot(&mut self, id: RobotId, way: Way) -> Result<(), InvalidCommand> {
-        let start_pos = self.robots
-            .iter_mut()
-            .find(|ref robot| robot.id == id)
-            .ok_or(InvalidCommand::NotPlayingRobot)? 
-            .pos
-            .take()
-            .ok_or(InvalidCommand::NotPlayingRobot)?;
-
+    pub fn cast_ray(&self, source_pos: &Pos, way: Way) -> Pos {
         let mut hits = vec![
-            self.board.hit_from(&start_pos, way)
+            self.board.hit_from(&source_pos, way)
                 .expect("board can at least hit the wall")
         ];
+
         hits.extend(
             self.robots.iter()
-            .filter(|robot| robot.id != id)
+            .filter(|robot| robot.pos.as_ref() != Some(source_pos))
             .filter_map(|robot| robot.pos.as_ref())
-            .filter_map(|pos| start_pos.find_hit_to(&pos, way))
+            .filter_map(|pos| source_pos.find_hit_to(&pos, way))
         );
 
-        let end_pos = hits
-            .into_iter()
+        hits.into_iter()
             .min_by_key(|hit| hit.distance)
             .map(|hit| hit.pos)
-            .expect("at least one hit from the board should exist");
+            .expect("at least one hit from the board should exist")
+    }
 
-        println!("Robot {:?} move from {:?} to {:?}", id, start_pos, end_pos);
 
-        self.robots.iter_mut()
-            .find(|ref robot| robot.id == id)
+    pub fn place_robot(&mut self, robot: RobotId, pos: Pos) {
+        self.robot_mut(robot)
             .expect("robot exists")
-            .pos = Some(end_pos);
-
-        Ok(())
+            .pos = Some(pos);
     }
 }
 
