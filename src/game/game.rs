@@ -1,13 +1,13 @@
 use crate::robot::RobotId;
 use crate::positionning::{LogicalPos, Way};
-use crate::world::GameWorld;
+use crate::world::GameState;
 
 use super::command::{Command, CommandResult};
 use super::move_robot_command::MoveRobotCommand;
 
 
 pub struct Game {
-    pub world: GameWorld,
+    pub world: GameState,
     undo_stack: Vec<Box<dyn Command>>,
     redo_stack: Vec<Box<dyn Command>>,
 }
@@ -16,7 +16,7 @@ pub struct Game {
 impl Game {
     pub fn new() -> Game {
         Game {
-            world: GameWorld::new(),
+            world: GameState::new(),
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),
         }

@@ -1,6 +1,6 @@
 use sdl2::rect::Rect;
 
-use crate::world::GameWorld;
+use crate::world::GameState;
 use crate::positionning::{LogicalPos, RotateAngle, FlipAxis};
 use crate::moves::MovePossibility;
 
@@ -22,7 +22,7 @@ impl<'r> Renderer<'r> {
     }
 
 
-    pub fn render(&mut self, world: &GameWorld) -> Result<(), String> {
+    pub fn render(&mut self, world: &GameState) -> Result<(), String> {
         self.prepare(world)?;
         self.render_all(world)?;
         self.draw_ctx.canvas.present();
@@ -30,7 +30,7 @@ impl<'r> Renderer<'r> {
     }
 
 
-    fn prepare(&mut self, world: &GameWorld) -> Result<(), String> {
+    fn prepare(&mut self, world: &GameState) -> Result<(), String> {
         self.draw_ctx.canvas.set_draw_color(self.settings.background_color);
         self.draw_ctx.canvas.clear();
 
@@ -50,7 +50,7 @@ impl<'r> Renderer<'r> {
     /**
      * Render all game items.
      */
-    pub fn render_all(&mut self, world: &GameWorld) -> Result<(), String>
+    pub fn render_all(&mut self, world: &GameState) -> Result<(), String>
     {
         let (width, height) = self.draw_ctx.canvas.output_size()?;
         let geom = Rect::new(10, 10, width - 20, height - 20);
@@ -123,7 +123,7 @@ impl<'r> Renderer<'r> {
     }
 
 
-    fn init_board(&mut self, world: &GameWorld) -> Result<(), String> {
+    fn init_board(&mut self, world: &GameState) -> Result<(), String> {
         let (format, width, height);
 
         {
@@ -150,7 +150,7 @@ impl<'r> Renderer<'r> {
 
     fn draw_board<'c, 't>(
         draw_ctx: &mut DrawContext<'c, 't>,
-        world: &GameWorld,
+        world: &GameState,
         draw_walls_on_edge: bool
         ) -> Result<(), String>
         {

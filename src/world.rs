@@ -9,7 +9,7 @@ use crate::board::{
 };
 
 
-pub struct GameWorld {
+pub struct GameState {
     pub board: Box<dyn EditableBoard>,
     pub robots: [Robot; 4],
 }
@@ -21,8 +21,8 @@ pub enum InvalidCommand {
 }
 
 
-impl GameWorld {
-    pub fn new() -> GameWorld {
+impl GameState {
+    pub fn new() -> GameState {
         let board = Box::new(BoardByIndirectTable::new());
         //let board = Box::new(BoardByIndividualCells::new());
 
@@ -33,7 +33,7 @@ impl GameWorld {
             Robot::new(RobotId::Yellow),
         ];
 
-        GameWorld {
+        GameState {
             board,
             robots
         }
