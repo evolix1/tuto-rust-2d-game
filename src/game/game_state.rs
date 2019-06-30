@@ -16,12 +16,6 @@ pub struct GameState {
 }
 
 
-pub enum InvalidCommand {
-    /// Robot
-    NotPlayingRobot,
-}
-
-
 impl GameState {
     pub fn new() -> GameState {
         let board = Box::new(BoardByIndirectTable::new());
@@ -117,14 +111,5 @@ impl GameState {
         self.robot_mut(robot)
             .expect("robot exists")
             .pos = Some(pos);
-    }
-}
-
-
-impl From<InvalidCommand> for String {
-    fn from(err: InvalidCommand) -> Self {
-        match err {
-            InvalidCommand::NotPlayingRobot => "robot is not playing".into(),
-        }
     }
 }

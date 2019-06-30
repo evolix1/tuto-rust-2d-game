@@ -19,6 +19,14 @@ pub type LogicalPos = Vector2<usize>;
 pub type PhysicalPos = Vector2<f32>;
 
 
+pub fn physical_from_logical(logical_pos: &LogicalPos) -> PhysicalPos {
+    PhysicalPos{
+        x: logical_pos.x as f32,
+        y: logical_pos.y as f32
+    }
+}
+
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Hit {
     pub pos: LogicalPos,
@@ -169,11 +177,3 @@ macro_rules! impl_way {
 }
 
 impl_way!(Way);
-
-
-pub fn physical_from_logical(logical_pos: &LogicalPos) -> PhysicalPos {
-    PhysicalPos{
-        x: logical_pos.x as f32,
-        y: logical_pos.y as f32
-    }
-}

@@ -1,3 +1,5 @@
+pub mod error;
+
 mod robot;
 mod game_state;
 mod command;
@@ -5,7 +7,6 @@ mod move_robot_command;
 mod animation;
 mod game;
 mod keyboard_controller;
-pub mod error;
 mod world;
 
 

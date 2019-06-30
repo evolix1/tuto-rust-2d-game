@@ -1,4 +1,5 @@
-mod error;
+pub mod error;
+
 mod board;
 mod tile;
 mod tile_set;

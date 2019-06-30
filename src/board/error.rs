@@ -3,7 +3,7 @@ pub use error_chain::bail; // Re-export
 
 use crate::positionning::{LogicalPos, SideLength};
 
-use super::tile_parser_error::{TileParserError, TileParserErrorKind};
+use super::tile_parser_error;
 
 
 error_chain! {
@@ -12,7 +12,7 @@ error_chain! {
     }
 
     links {
-        TileParseError(TileParserError, TileParserErrorKind);
+        TileParseError(tile_parser_error::Error, tile_parser_error::ErrorKind);
     }
 
     errors {

@@ -6,8 +6,8 @@ use sdl2::keyboard::Keycode;
 use sdl2::image::{self, InitFlag};
 
 // Application related
-mod config;
 mod error;
+mod config;
 
 // Math & Abstract
 #[macro_use]

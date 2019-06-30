@@ -4,7 +4,7 @@ pub use error_chain::bail; // Re-export
 
 error_chain! {
     types {
-        TileParserError, TileParserErrorKind, ResultExt, Result;
+        Error, ErrorKind, ResultExt, Result;
     }
 
     errors {

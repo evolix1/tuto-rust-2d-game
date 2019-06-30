@@ -34,7 +34,7 @@ impl<'a> TileParser<'a> {
             match *item as char {
                 '.' => {
                     if row >= side {
-                        bail!(TileParserErrorKind::TooLargeContent(side));
+                        bail!(ErrorKind::TooLargeContent(side));
                     }
 
                     column += 1;
@@ -60,7 +60,7 @@ impl<'a> TileParser<'a> {
                         "vertical wall".into(),
                         "horizontal wall".into()];
 
-                    bail!(TileParserErrorKind::UnexpectedToken(
+                    bail!(ErrorKind::UnexpectedToken(
                         unexpected, expected, column, row
                     ));
                 },
@@ -73,7 +73,7 @@ impl<'a> TileParser<'a> {
         // missing some rows
         else if row < side {
             let missing = side - row;
-            bail!(TileParserErrorKind::MissingRows(row, missing))
+            bail!(ErrorKind::MissingRows(row, missing))
         }
         else {
             unreachable!("too large content error should have been returned earlier");
