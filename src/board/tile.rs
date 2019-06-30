@@ -2,7 +2,7 @@ use crate::wall::Wall;
 
 use crate::positionning::{LogicalPos, RotateAngle, SideLength};
 
-use super::error::Result;
+use super::error::*;
 use super::board::EditableBoard;
 use super::border::Border;
 

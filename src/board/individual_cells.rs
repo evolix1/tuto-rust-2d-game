@@ -4,7 +4,7 @@ use crate::positionning::{LogicalPos, PosExtra, Way, Hit, SideLength};
 use crate::moves::MovePossibility;
 use crate::wall::{Wall, Side};
 
-use super::error::{Error, Result};
+use super::error::*;
 use super::board::{Board, EditableBoard};
 
 
@@ -94,7 +94,7 @@ impl EditableBoard for BoardByIndividualCells {
             Ok(())
         }
         else {
-            Err(Error::DimensionsNotSuitableForBoard)
+            bail!(ErrorKind::InvalidDimensionToBuildBoard)
         }
     }
 

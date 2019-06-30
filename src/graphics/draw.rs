@@ -8,6 +8,7 @@ use sdl2::pixels::PixelFormatEnum;
 
 use crate::positionning::{RotateAngle, FlipAxis};
 
+use super::error::*;
 use super::sprite::{Sprite, SpriteId};
 use super::texture::TextureManager;
 
@@ -29,11 +30,13 @@ impl<'c, 't> DrawContext<'c, 't> {
         }
     }
 
-    pub fn draw(&mut self, id: &SpriteId, area: Rect) -> Result<(), String> {
+    pub fn draw(&mut self, id: &SpriteId, area: Rect) -> Result<()> {
         let tm = self.tm.borrow();
         let sprite = tm.get_sprite(id)?;
         let texture = tm.get_texture(sprite)?;
-        self.canvas.copy(texture, sprite.geom, area)
+        self.canvas
+            .copy(texture, sprite.geom, area)
+            .into_sdl_error()
     }
 
     pub fn draw_transform(
@@ -42,7 +45,7 @@ impl<'c, 't> DrawContext<'c, 't> {
         area: Rect,
         rotation: RotateAngle,
         flip: FlipAxis,
-        ) -> Result<(), String> {
+        ) -> Result<()> {
         let angle = match rotation {
             RotateAngle::NoTurn => 0f64,
             RotateAngle::TurnLeft => 90f64,
@@ -60,8 +63,10 @@ impl<'c, 't> DrawContext<'c, 't> {
         let tm = self.tm.borrow();
         let sprite = tm.get_sprite(id)?;
         let texture = tm.get_texture(sprite)?;
-        self.canvas.copy_ex(texture, sprite.geom, area,
-                            angle, center, flip_horizontal, flip_vertical)
+        self.canvas
+            .copy_ex(texture, sprite.geom, area,
+                     angle, center, flip_horizontal, flip_vertical)
+            .into_sdl_error()
     }
 
     pub fn create_texture<F, D>(
@@ -72,9 +77,9 @@ impl<'c, 't> DrawContext<'c, 't> {
         height: u32,
         draw: D
         )
-        -> Result<Sprite, String>
+        -> Result<Sprite>
         where F: Into<Option<PixelFormatEnum>>,
-              D: for<'m> FnOnce(&'m mut DrawContext<'m, 't>) -> Result<(), String>,
+              D: for<'m> FnOnce(&'m mut DrawContext<'m, 't>) -> Result<()>,
     {
         let mut texture = self.tm.borrow_mut().create_texture(format, width, height)?;
 
@@ -87,7 +92,7 @@ impl<'c, 't> DrawContext<'c, 't> {
                 let mut ctx = DrawContext { canvas: texture_canvas, tm: reuse_tm };
                 draw_result = draw(&mut ctx);
             })
-            .map_err(|err| format!("{:?}", err))
+            .into_sdl_error()
             .and(draw_result)
             .map(|_| self.tm.borrow_mut().add_sprite_from_texture(texture, id))
     }

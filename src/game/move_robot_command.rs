@@ -1,8 +1,9 @@
 use crate::robot::RobotId;
 use crate::positionning::LogicalPos;
 
+use super::error::*;
 use super::Game;
-use super::command::{Command, CommandBase, CommandResult};
+use super::command::{Command, CommandBase};
 
 
 #[derive(Debug, Clone)]
@@ -14,7 +15,10 @@ pub struct MoveRobotCommand {
 
 
 impl MoveRobotCommand {
-    pub fn new(robot: RobotId, source_pos: LogicalPos, target_pos: LogicalPos) -> MoveRobotCommand {
+    pub fn new(
+        robot: RobotId,
+        source_pos: LogicalPos,
+        target_pos: LogicalPos) -> MoveRobotCommand {
         MoveRobotCommand {
             robot,
             source_pos,
@@ -25,13 +29,13 @@ impl MoveRobotCommand {
 
 
 impl CommandBase for MoveRobotCommand {
-    fn redo(&self, game: &mut Game) -> CommandResult<()> {
+    fn redo(&self, game: &mut Game) -> Result<()> {
         game.world.place_robot(self.robot, self.target_pos.clone());
         // game.start_move_animation(self.robot, self.source_pos, self.target_pos);
         Ok(())
     }
 
-    fn undo(&self, game: &mut Game) -> CommandResult<()> {
+    fn undo(&self, game: &mut Game) -> Result<()> {
         game.world.place_robot(self.robot, self.source_pos.clone());
         // game.start_move_animation(self.robot, self.target_pos, self.source_pos);
         Ok(())

@@ -4,8 +4,8 @@ use sdl2::event::Event;
 use crate::robot::RobotId;
 use crate::positionning::Way;
 
+use super::error::*;
 use super::Game;
-use super::command::CommandResult;
 
 
 #[derive(Debug)]
@@ -38,7 +38,7 @@ impl KeyboardController {
         }
     }
 
-    pub fn process_event(&mut self, game: &mut Game, event: &Event) -> CommandResult<bool> {
+    pub fn process_event(&mut self, game: &mut Game, event: &Event) -> Result<bool> {
         match event {
             Event::KeyDown { scancode: Some(scancode), repeat: false, .. } => {
                 self.process_keypress(game, scancode)
@@ -49,7 +49,7 @@ impl KeyboardController {
         }
     }
 
-    pub fn process_keypress(&mut self, game: &mut Game, scancode: &Scancode) -> CommandResult<bool> {
+    pub fn process_keypress(&mut self, game: &mut Game, scancode: &Scancode) -> Result<bool> {
         if let Some(way) = self.way_from_scancode(scancode) {
             game.try_move_robot_in_dir(self.current_robot, way)?;
             Ok(true)

@@ -2,7 +2,7 @@ use crate::positionning::{LogicalPos, PosExtra, Way, Hit, SideLength};
 use crate::moves::MovePossibility;
 use crate::wall::{Wall, Side};
 
-use super::error::{Error, Result};
+use super::error::*;
 use super::board::{Board, EditableBoard};
 
 
@@ -31,14 +31,14 @@ impl BoardByIndirectTable {
     fn column_at(&self, x: usize) -> Result<&Vec<usize>> {
         self.walls_to_move_on_y
             .get(x)
-            .ok_or_else(|| self.oob_error(LogicalPos{ x, y: 0 }))
+            .ok_or_else(|| self.oob_error(LogicalPos{ x, y: 0 }).into())
     }
 
 
     fn row_at(&self, y: usize) -> Result<&Vec<usize>> {
         self.walls_to_move_on_x
             .get(y)
-            .ok_or_else(|| self.oob_error(LogicalPos{ x: 0, y }))
+            .ok_or_else(|| self.oob_error(LogicalPos{ x: 0, y }).into())
     }
 
 
@@ -46,7 +46,7 @@ impl BoardByIndirectTable {
         let err = self.oob_error(LogicalPos{ x, y: 0 });
         self.walls_to_move_on_y
             .get_mut(x)
-            .ok_or(err)
+            .ok_or(err.into())
     }
 
 
@@ -54,7 +54,7 @@ impl BoardByIndirectTable {
         let err = self.oob_error(LogicalPos{ x: 0, y });
         self.walls_to_move_on_x
             .get_mut(y)
-            .ok_or(err)
+            .ok_or(err.into())
     }
 
 
@@ -153,7 +153,7 @@ impl EditableBoard for BoardByIndirectTable {
             Ok(())
         }
         else {
-            Err(Error::DimensionsNotSuitableForBoard)
+            bail!(ErrorKind::InvalidDimensionToBuildBoard)
         }
     }
 

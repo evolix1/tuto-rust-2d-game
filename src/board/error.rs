@@ -1,14 +1,34 @@
+use error_chain::error_chain;
+pub use error_chain::bail; // Re-export
+
 use crate::positionning::{LogicalPos, SideLength};
 
+use super::tile_parser_error::{TileParserError, TileParserErrorKind};
 
-#[derive(Debug)]
-pub enum Error {
-    DimensionsNotSuitableForBoard,
-    OutOfBoardPosition{ pos: LogicalPos, side_length: SideLength },
-    EmptyTileSet,
-    InvalidTileStructure(String),
-    TileDimensionsDoNotMatchContent(String),
+
+error_chain! {
+    types {
+        Error, ErrorKind, ResultExt, Result;
+    }
+
+    links {
+        TileParseError(TileParserError, TileParserErrorKind);
+    }
+
+    errors {
+        InvalidDimensionToBuildBoard {
+            description("robot has no position"),
+            display("robot has no position"),
+        }
+
+        OutOfBoardPosition(pos: LogicalPos, side_length: SideLength) {
+            description("out-of-board position"),
+            display("out-of-board position {0:?} (board={1}x{1})", pos, side_length),
+        }
+
+        EmptyTileSet {
+            description("empty tile set"),
+            display("empty tile set"),
+        }
+    }
 }
-
-
-pub type Result<T> = std::result::Result<T, Error>;

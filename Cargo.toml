@@ -6,13 +6,12 @@ description = "Ricochet robot game"
 edition = "2018"
 
 [dependencies]
-specs = "0.14"
-specs-derive = "0.4"
 rand = "0.6"
 serde = "1.0.91"
 serde_derive = "1.0.91"
 json5 = "0.2.4"
 cgmath = "0.17.0"
+error-chain = "0.12.1"
 
 [dependencies.sdl2]
 version = "0.32.2"

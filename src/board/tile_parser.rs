@@ -1,22 +1,8 @@
-use std::fmt;
-
 use crate::positionning::{LogicalPos, SideLength};
 use crate::wall::{Wall, Side};
 
+use super::tile_parser_error::*;
 use super::tile::Tile;
-use super::error::Error;
-
-
-pub enum ParseError {
-    UnexpectedToken{
-        unexpected: char,
-        expected: Vec<String>,
-        column: usize,
-        row: usize
-    },
-    MissingRows{ last_row: usize, missing: usize },
-    TooLargeContent{ max_rows: usize },
-}
 
 
 pub struct TileParser<'a> {
@@ -31,13 +17,13 @@ impl<'a> TileParser<'a> {
 
 
     // NOTE: make it an actual iterator
-    pub fn parse_all(&mut self, side_length: &SideLength) -> std::result::Result<Vec<Tile>, ParseError> {
+    pub fn parse_all(&mut self, side_length: &SideLength) -> Result<Vec<Tile>> {
         self.texts.iter()
             .map(|text| Self::parse(side_length, text))
-            .collect::<std::result::Result<_, _>>()
+            .collect::<Result<_>>()
     }
 
-    pub fn parse(side_length: &SideLength, text: &String) -> std::result::Result<Tile, ParseError> {
+    pub fn parse(side_length: &SideLength, text: &String) -> Result<Tile> {
         let side = side_length.0;
 
         let mut walls = Vec::new();
@@ -48,7 +34,7 @@ impl<'a> TileParser<'a> {
             match *item as char {
                 '.' => {
                     if row >= side {
-                        return Err(ParseError::TooLargeContent{ max_rows: side });
+                        bail!(TileParserErrorKind::TooLargeContent(side));
                     }
 
                     column += 1;
@@ -74,12 +60,9 @@ impl<'a> TileParser<'a> {
                         "vertical wall".into(),
                         "horizontal wall".into()];
 
-                    return Err(ParseError::UnexpectedToken{
-                        expected,
-                        unexpected,
-                        column,
-                        row
-                    });
+                    bail!(TileParserErrorKind::UnexpectedToken(
+                        unexpected, expected, column, row
+                    ));
                 },
             }
         }
@@ -90,49 +73,10 @@ impl<'a> TileParser<'a> {
         // missing some rows
         else if row < side {
             let missing = side - row;
-            Err(ParseError::MissingRows{ last_row: row, missing })
+            bail!(TileParserErrorKind::MissingRows(row, missing))
         }
         else {
             unreachable!("too large content error should have been returned earlier");
-        }
-    }
-}
-
-
-impl fmt::Debug for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> std::result::Result<(), fmt::Error> {
-        match &self {
-            &ParseError::UnexpectedToken{ expected, unexpected, row, column } =>
-                write!(f,
-                        "at {}:{} unexpected {} (wanted: {})",
-                        row,
-                        column,
-                        unexpected,
-                        expected.join("', '")),
-            &ParseError::MissingRows{ last_row, missing } =>
-                write!(f,
-                       "missing {} row{} from the {}-th row in the tile to be complete",
-                       missing,
-                       if *missing == 1 { "" } else { "s" },
-                       last_row),
-            &ParseError::TooLargeContent{ max_rows } =>
-                write!(f,
-                       "cannot have an {}-th row when tile only have {} rows",
-                       max_rows + 1,
-                       max_rows),
-        }
-    }
-}
-
-
-impl Into<Error> for ParseError {
-    fn into(self) -> Error {
-        match &self {
-            &ParseError::UnexpectedToken{..} =>
-                Error::InvalidTileStructure(format!("{:?}", self)),
-            &ParseError::MissingRows{..}
-            | &ParseError::TooLargeContent{..} =>
-                Error::TileDimensionsDoNotMatchContent(format!("{:?}", self)),
         }
     }
 }

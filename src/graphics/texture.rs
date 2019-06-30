@@ -10,6 +10,7 @@ use sdl2::pixels::PixelFormatEnum;
 
 use crate::robot::RobotId;
 
+use super::error::*;
 use super::sprite::{Sprite, SpriteId};
 
 
@@ -33,14 +34,15 @@ impl<'t> TextureManager<'t> {
         }
     }
 
-    pub fn load_static(&mut self, path: &PathBuf) -> Result<(), String> {
+    pub fn load_static(&mut self, path: &PathBuf) -> Result<()> {
         self.surfaces = vec![
-            Surface::from_file(path)?,
+            Surface::from_file(path).into_sdl_error()?
         ];
 
         let texture = self.creator
             .create_texture_from_surface(&self.surfaces[0])
-            .map_err(|e| format!("{:?}", e))?;
+            .map_err(|e| format!("{:?}", e))
+            .into_sdl_error()?;
 
         let side = texture.query().height;
 
@@ -74,27 +76,27 @@ impl<'t> TextureManager<'t> {
         self.textures.len() - 1
     }
 
-    pub fn get_texture(&self, sprite: &Sprite) -> Result<&Texture<'t>, String> {
+    pub fn get_texture(&self, sprite: &Sprite) -> Result<&Texture<'t>> {
         match self.textures.get(sprite.texture_index) {
             Some(Some(ref texture)) => Ok(texture),
-            _ => Err(format!("missing texture"))
+            _ => bail!(ErrorKind::MissingTexture(sprite.texture_index.clone()))
         }
     }
 
     pub fn create_texture<F>(&mut self, format: F, width: u32, height: u32)
-        -> Result<Texture<'t>, String>
+        -> Result<Texture<'t>>
         where F: Into<Option<PixelFormatEnum>>
     {
         self.creator
             .create_texture_target(format, width, height)
-            .map_err(|err| format!("{:?}", err))
+            .into_sdl_error()
     }
 
     // Sprite management below
 
-    pub fn get_sprite(&self, id: &SpriteId) -> Result<&Sprite, String> {
+    pub fn get_sprite(&self, id: &SpriteId) -> Result<&Sprite> {
         self.sprites.get(id)
-            .ok_or_else(|| format!("missing sprite"))
+            .ok_or_else(|| ErrorKind::MissingSprite(id.clone()).into())
     }
 
     pub fn sprite_exists(&self, id: &SpriteId) -> bool {

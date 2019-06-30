@@ -4,6 +4,7 @@ use crate::world::GameWorld;
 use crate::positionning::{LogicalPos, RotateAngle, FlipAxis};
 use crate::moves::MovePossibility;
 
+use super::error::*;
 use super::draw::DrawContext;
 use super::sprite::SpriteId;
 use super::render::{RenderSettings, AspectRatio};
@@ -22,7 +23,7 @@ impl<'r> Renderer<'r> {
     }
 
 
-    pub fn render(&mut self, world: &GameWorld) -> Result<(), String> {
+    pub fn render(&mut self, world: &GameWorld) -> Result<()> {
         self.prepare(world)?;
         self.render_all(world)?;
         self.draw_ctx.canvas.present();
@@ -30,7 +31,7 @@ impl<'r> Renderer<'r> {
     }
 
 
-    fn prepare(&mut self, world: &GameWorld) -> Result<(), String> {
+    fn prepare(&mut self, world: &GameWorld) -> Result<()> {
         self.draw_ctx.canvas.set_draw_color(self.settings.background_color);
         self.draw_ctx.canvas.clear();
 
@@ -50,7 +51,7 @@ impl<'r> Renderer<'r> {
     /**
      * Render all game items.
      */
-    pub fn render_all(&mut self, world: &GameWorld) -> Result<(), String>
+    pub fn render_all(&mut self, world: &GameWorld) -> Result<()>
     {
         let (width, height) = self.draw_ctx.canvas.output_size()?;
         let geom = Rect::new(10, 10, width - 20, height - 20);
@@ -96,7 +97,7 @@ impl<'r> Renderer<'r> {
         id: &SpriteId,
         area: Rect,
         aspect: AspectRatio
-        ) -> Result<Rect, String> {
+        ) -> Result<Rect> {
         let display_geom = match aspect {
             AspectRatio::Stretch => area,
             AspectRatio::KeepIn => {
@@ -123,7 +124,7 @@ impl<'r> Renderer<'r> {
     }
 
 
-    fn init_board(&mut self, world: &GameWorld) -> Result<(), String> {
+    fn init_board(&mut self, world: &GameWorld) -> Result<()> {
         let (format, width, height);
 
         {
@@ -152,14 +153,17 @@ impl<'r> Renderer<'r> {
         draw_ctx: &mut DrawContext<'c, 't>,
         world: &GameWorld,
         draw_walls_on_edge: bool
-        ) -> Result<(), String>
+        ) -> Result<()>
         {
             let sprite_id = SpriteId::CellBackground;
 
             let side = world.board.side_length().0;
             let side_f = side as f32;
 
-            let (width, height) = draw_ctx.canvas.output_size()?;
+            let (width, height) = draw_ctx.canvas
+                .output_size()
+                .into_sdl_error()?;
+
             let width = width as f32;
             let height = height as f32;
 

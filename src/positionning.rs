@@ -1,3 +1,4 @@
+use std::fmt;
 use rand::{thread_rng, Rng};
 
 use cgmath::Vector2;
@@ -6,6 +7,12 @@ use serde_derive::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SideLength(pub usize);
+
+impl fmt::Display for SideLength {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 
 pub type LogicalPos = Vector2<usize>;

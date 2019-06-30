@@ -4,9 +4,9 @@ mod tile;
 mod tile_set;
 mod border;
 mod tile_parser;
+mod tile_parser_error;
 mod builder;
 
-pub use self::error::{Error, Result};
 pub use self::board::{Board, EditableBoard};
 pub use self::tile::Tile;
 pub use self::tile_set::TileSet;

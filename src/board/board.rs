@@ -2,7 +2,7 @@ use crate::positionning::{LogicalPos, PosExtra, Way, Hit, SideLength};
 use crate::moves::MovePossibility;
 use crate::wall::Wall;
 
-use super::error::{Error, Result};
+use super::error::*;
 
 
 pub trait Board {
@@ -42,14 +42,14 @@ pub trait Board {
             })
     }
 
-    fn oob_error(&self, pos: LogicalPos) -> Error {
+    fn oob_error(&self, pos: LogicalPos) -> ErrorKind {
         let side_length = self.side_length();
-        Error::OutOfBoardPosition{ pos, side_length }
+        ErrorKind::OutOfBoardPosition(pos, side_length)
     }
 
     fn if_exists(&self, pos: &LogicalPos) -> Result<()> {
         if self.pos_exists(&pos) { Ok(()) }
-        else { Err(self.oob_error(pos.clone())) }
+        else { bail!(self.oob_error(pos.clone())) }
     }
 }
 

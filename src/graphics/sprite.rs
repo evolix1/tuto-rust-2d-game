@@ -3,7 +3,7 @@ use sdl2::rect::Rect;
 use crate::robot::RobotId;
 
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub enum SpriteId {
     // Board management
     CellBackground,

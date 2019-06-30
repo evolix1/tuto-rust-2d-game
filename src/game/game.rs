@@ -2,7 +2,8 @@ use crate::robot::RobotId;
 use crate::positionning::{LogicalPos, Way};
 use crate::world::GameWorld;
 
-use super::command::{Command, CommandResult};
+use super::error::*;
+use super::command::Command;
 use super::move_robot_command::MoveRobotCommand;
 
 
@@ -23,10 +24,10 @@ impl Game {
     }
 
     pub fn try_move_robot_in_dir(&mut self, robot: RobotId, way: Way)
-        -> CommandResult<bool> {
+        -> Result<bool> {
         let source_pos = self.world
             .robot_pos(robot)
-            .ok_or("robot must be placed")?;
+            .ok_or_else(|| ErrorKind::RobotHasNoPosition)?;
         let target_pos = self.world.cast_ray(&source_pos, way);
 
         if target_pos != source_pos {
@@ -38,10 +39,10 @@ impl Game {
         }
     }
 
-    pub fn move_robot(&mut self, robot: RobotId, target_pos: LogicalPos) -> CommandResult<()> {
+    pub fn move_robot(&mut self, robot: RobotId, target_pos: LogicalPos) -> Result<()> {
         let source_pos = self.world
             .robot_pos(robot)
-            .ok_or("robot must be placed")?;
+            .ok_or_else(|| ErrorKind::RobotHasNoPosition)?;
         let command = MoveRobotCommand::new(
             robot,
             source_pos,
@@ -51,7 +52,7 @@ impl Game {
         self.exec_command(Box::new(command))
     }
 
-    fn exec_command(&mut self, command: Box<dyn Command>) -> CommandResult<()> {
+    fn exec_command(&mut self, command: Box<dyn Command>) -> Result<()> {
         println!("Exec command: {:?}", command);
         let res = command.redo(self);
         self.undo_stack.push(command);
@@ -66,7 +67,7 @@ impl Game {
     }
 
 
-    pub fn undo(&mut self) -> CommandResult<bool> {
+    pub fn undo(&mut self) -> Result<bool> {
         match self.undo_stack.pop() {
             Some(command) => {
                 command.undo(self)?;
@@ -80,7 +81,7 @@ impl Game {
     }
 
 
-    pub fn redo(&mut self) -> CommandResult<bool> {
+    pub fn redo(&mut self) -> Result<bool> {
         match self.redo_stack.pop() {
             Some(command) => {
                 command.redo(self)?;

@@ -7,6 +7,7 @@ use sdl2::image::{self, InitFlag};
 
 // Application related
 mod config;
+mod error;
 
 // Math & Abstract
 #[macro_use]
@@ -24,7 +25,7 @@ mod game;
 mod graphics;
 
 
-fn main() -> Result<(), String> {
+fn main() -> error::Result<()> {
     let config = Rc::new(config::load_default()?);
 
     let sdl_context = sdl2::init()?;
