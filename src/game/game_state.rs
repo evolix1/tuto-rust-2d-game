@@ -12,7 +12,7 @@ use crate::board::{
 
 pub struct GameState {
     pub board: Box<dyn EditableBoard>,
-    pub robots: [Robot; 4],
+    pub robots: Vec<Robot>,
 }
 
 
@@ -27,7 +27,7 @@ impl GameState {
         let board = Box::new(BoardByIndirectTable::new());
         //let board = Box::new(BoardByIndividualCells::new());
 
-        let robots = [
+        let robots = vec![
             Robot::new(RobotId::Red),
             Robot::new(RobotId::Green),
             Robot::new(RobotId::Blue),

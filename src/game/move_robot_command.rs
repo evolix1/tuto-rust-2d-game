@@ -26,14 +26,14 @@ impl MoveRobotCommand {
 
 impl CommandBase for MoveRobotCommand {
     fn redo(&self, game: &mut Game) -> CommandResult<()> {
-        game.world.place_robot(self.robot, self.target_pos.clone());
-        // game.start_move_animation(self.robot, self.source_pos, self.target_pos);
+        game.state.place_robot(self.robot, self.target_pos.clone());
+        game.start_move_animation(self.robot, &self.source_pos, &self.target_pos);
         Ok(())
     }
 
     fn undo(&self, game: &mut Game) -> CommandResult<()> {
-        game.world.place_robot(self.robot, self.source_pos.clone());
-        // game.start_move_animation(self.robot, self.target_pos, self.source_pos);
+        game.state.place_robot(self.robot, self.source_pos.clone());
+        game.start_move_animation(self.robot, &self.target_pos, &self.source_pos);
         Ok(())
     }
 }

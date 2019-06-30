@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::rc::Rc;
 
 use sdl2::event::Event;
@@ -53,12 +53,13 @@ fn main() -> Result<(), String> {
     let mut game = game::Game::new();
 
     let board_builder = board::Builder::new(&config);
-    board_builder.build_on(&mut game.world);
-    game.world.reset_rand_pos();
+    board_builder.build_on(&mut game.state);
+    game.state.reset_rand_pos();
 
     let mut kb_controller = game::KeyboardController::new();
 
     let mut event_pump = sdl_context.event_pump()?;
+    let mut time = Instant::now();
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
@@ -68,7 +69,7 @@ fn main() -> Result<(), String> {
                 },
                 Event::KeyDown { keycode: Some(Keycode::B), .. } => {
                     renderer.invalidate_board();
-                    board_builder.build_on(&mut game.world);
+                    board_builder.build_on(&mut game.state);
                     game.reset_rand_pos();
                 },
                 Event::KeyDown { keycode: Some(Keycode::R), .. } => {
@@ -98,8 +99,14 @@ fn main() -> Result<(), String> {
             }
         }
 
-        renderer.render(&game.world)?;
+        let frame_time = Instant::now();
+        // TODO: use as_secs_f32 when available in stable.
+        let elapsed = frame_time.duration_since(time).as_micros() as f32 * 0.000001;
 
+        game.update_animation(elapsed);
+        renderer.render(&game.state)?;
+
+        time = frame_time;
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 20));
     }
 
