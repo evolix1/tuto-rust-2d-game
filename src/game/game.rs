@@ -1,7 +1,7 @@
-use crate::robot::RobotId;
 use crate::positionning::{LogicalPos, Way};
-use crate::world::GameState;
 
+use super::robot::RobotId;
+use super::game_state::GameState;
 use super::command::{Command, CommandResult};
 use super::move_robot_command::MoveRobotCommand;
 

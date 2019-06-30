@@ -16,8 +16,6 @@ mod wall;
 
 // Game & Entities related
 mod board;
-mod world;
-mod robot;
 mod game;
 
 // Draw related

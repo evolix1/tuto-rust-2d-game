@@ -1,9 +1,9 @@
 use sdl2::keyboard::Scancode;
 use sdl2::event::Event;
 
-use crate::robot::RobotId;
 use crate::positionning::Way;
 
+use super::robot::RobotId;
 use super::Game;
 use super::command::CommandResult;
 

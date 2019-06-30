@@ -1,6 +1,6 @@
 use sdl2::rect::Rect;
 
-use crate::robot::RobotId;
+use crate::game::RobotId;
 
 
 #[derive(PartialEq, Eq, Hash)]

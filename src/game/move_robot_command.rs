@@ -1,6 +1,6 @@
-use crate::robot::RobotId;
 use crate::positionning::LogicalPos;
 
+use super::robot::RobotId;
 use super::Game;
 use super::command::{Command, CommandBase, CommandResult};
 

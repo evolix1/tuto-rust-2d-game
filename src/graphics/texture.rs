@@ -8,7 +8,7 @@ use sdl2::video::WindowContext;
 use sdl2::image::LoadSurface;
 use sdl2::pixels::PixelFormatEnum;
 
-use crate::robot::RobotId;
+use crate::game::RobotId;
 
 use super::sprite::{Sprite, SpriteId};
 

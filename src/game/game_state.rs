@@ -1,5 +1,6 @@
-use crate::robot::{Robot, RobotId};
 use crate::positionning::{LogicalPos, PosExtra, Way};
+
+use super::robot::{Robot, RobotId};
 
 #[allow(unused_imports)]
 use crate::board::{

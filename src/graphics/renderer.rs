@@ -1,8 +1,8 @@
 use sdl2::rect::Rect;
 
-use crate::world::GameState;
 use crate::positionning::{LogicalPos, RotateAngle, FlipAxis};
 use crate::moves::MovePossibility;
+use crate::game::GameState;
 
 use super::draw::DrawContext;
 use super::sprite::SpriteId;
