@@ -1,5 +1,5 @@
 use crate::robot::RobotId;
-use crate::positionning::{Pos, Way};
+use crate::positionning::{LogicalPos, Way};
 use crate::world::GameWorld;
 
 use super::command::{Command, CommandResult};
@@ -38,7 +38,7 @@ impl Game {
         }
     }
 
-    pub fn move_robot(&mut self, robot: RobotId, target_pos: Pos) -> CommandResult<()> {
+    pub fn move_robot(&mut self, robot: RobotId, target_pos: LogicalPos) -> CommandResult<()> {
         let source_pos = self.world
             .robot_pos(robot)
             .ok_or("robot must be placed")?;

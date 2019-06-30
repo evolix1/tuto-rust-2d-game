@@ -1,5 +1,5 @@
 use crate::robot::{Robot, RobotId};
-use crate::positionning::{Pos, Way};
+use crate::positionning::{LogicalPos, PosExtra, Way};
 
 #[allow(unused_imports)]
 use crate::board::{
@@ -52,7 +52,7 @@ impl GameWorld {
     }
 
 
-    pub fn robot_pos(&self, robot_id: RobotId) -> Option<Pos> {
+    pub fn robot_pos(&self, robot_id: RobotId) -> Option<LogicalPos> {
         self.robot(robot_id)?
             .pos
             .clone()
@@ -71,10 +71,10 @@ impl GameWorld {
     }
 
 
-    pub fn find_start_pos(&self) -> Option<Pos> {
+    pub fn find_start_pos(&self) -> Option<LogicalPos> {
         let side_length = self.board.side_length().0;
         (0..1000)
-            .map(|_| Pos::rand(side_length, side_length))
+            .map(|_| PosExtra::rand(side_length, side_length))
             .filter(|pos| self.board.is_start_pos(pos).unwrap_or(false))
             .filter(|pos| self.robots.iter().all(|r| match r.pos {
                 Some(ref p) if p == pos => false,
@@ -84,7 +84,7 @@ impl GameWorld {
     }
 
 
-    pub fn cast_ray(&self, source_pos: &Pos, way: Way) -> Pos {
+    pub fn cast_ray(&self, source_pos: &LogicalPos, way: Way) -> LogicalPos {
         let mut hits = vec![
             self.board.hit_from(&source_pos, way)
                 .expect("board can at least hit the wall")
@@ -104,7 +104,7 @@ impl GameWorld {
     }
 
 
-    pub fn place_robot(&mut self, robot: RobotId, pos: Pos) {
+    pub fn place_robot(&mut self, robot: RobotId, pos: LogicalPos) {
         self.robot_mut(robot)
             .expect("robot exists")
             .pos = Some(pos);

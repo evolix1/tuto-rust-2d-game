@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::positionning::{Pos, Way, Hit, SideLength};
+use crate::positionning::{LogicalPos, PosExtra, Way, Hit, SideLength};
 use crate::moves::MovePossibility;
 use crate::wall::{Wall, Side};
 
@@ -11,7 +11,7 @@ use super::board::{Board, EditableBoard};
 #[derive(Debug)]
 pub struct BoardByIndividualCells {
     side_length: SideLength,
-    cells: HashMap<Pos, MovePossibility>,
+    cells: HashMap<LogicalPos, MovePossibility>,
 }
 
 
@@ -34,12 +34,12 @@ impl Board for BoardByIndividualCells {
     }
 
 
-    fn is_start_pos(&self, _pos: &Pos) -> Result<bool> {
+    fn is_start_pos(&self, _pos: &LogicalPos) -> Result<bool> {
         Ok(true)
     }
 
 
-    fn moves_from(&self, start: &Pos) -> Result<MovePossibility> {
+    fn moves_from(&self, start: &LogicalPos) -> Result<MovePossibility> {
         self.if_exists(start)
             .map(|_| {
                 let mut moves = self.cells
@@ -57,11 +57,11 @@ impl Board for BoardByIndividualCells {
     }
 
 
-    fn hit_from(&self, start: &Pos, way: Way) -> Result<Hit> {
+    fn hit_from(&self, start: &LogicalPos, way: Way) -> Result<Hit> {
         let edge = self.side_hit(start, way)?;
 
         // Gather all positions for `start` to `edge`.
-        let hit = 
+        let hit =
             start.direct_path_to(&edge.pos)
             .unwrap_or(Vec::new())
             .into_iter()
@@ -92,7 +92,7 @@ impl EditableBoard for BoardByIndividualCells {
             self.cells.clear();
             self.side_length = side_length.clone();
             Ok(())
-        } 
+        }
         else {
             Err(Error::DimensionsNotSuitableForBoard)
         }
@@ -103,52 +103,60 @@ impl EditableBoard for BoardByIndividualCells {
         self.if_exists(&wall.pos)
             .map(|_| { match wall.side {
                 Side::Up => {
-                    if wall.pos.y != 0 {
+                    if wall.pos.y != 0
+                    {
                         self.cells
                             .entry(wall.pos.clone())
                             .or_insert_with(MovePossibility::all)
                             .up = false;
+
                         self.cells
-                            .entry(Pos::new(wall.pos.x, wall.pos.y - 1))
+                            .entry(LogicalPos{ x: wall.pos.x, y: wall.pos.y - 1 })
                             .or_insert_with(MovePossibility::all)
                             .down = false;
                     }
                 },
                 Side::Down => {
-                    if wall.pos.y + 1 != self.side_length.0 {
+                    if wall.pos.y + 1 != self.side_length.0
+                    {
                         self.cells
                             .entry(wall.pos.clone())
                             .or_insert_with(MovePossibility::all)
                             .down = false;
+
                         self.cells
-                            .entry(Pos::new(wall.pos.x, wall.pos.y + 1))
+                            .entry(LogicalPos{ x: wall.pos.x, y: wall.pos.y + 1 })
                             .or_insert_with(MovePossibility::all)
                             .up = false;
-                    } 
+                    }
                 },
                 Side::Left => {
-                    if wall.pos.x != 0 {
+                    if wall.pos.x != 0
+                    {
                         self.cells
                             .entry(wall.pos.clone())
                             .or_insert_with(MovePossibility::all)
                             .left = false;
+
                         self.cells
-                            .entry(Pos::new(wall.pos.x - 1, wall.pos.y))
+                            .entry(LogicalPos{ x: wall.pos.x - 1, y: wall.pos.y })
                             .or_insert_with(MovePossibility::all)
                             .right = false;
                     }
                 },
                 Side::Right => {
-                    if wall.pos.x + 1 != self.side_length.0 {
+                    if wall.pos.x + 1 != self.side_length.0
+                    {
                         self.cells
                             .entry(wall.pos.clone())
                             .or_insert_with(MovePossibility::all)
                             .right = false;
+
                         self.cells
-                            .entry(Pos::new(wall.pos.x + 1, wall.pos.y))
+                            .entry(LogicalPos{ x: wall.pos.x + 1, y: wall.pos.y })
                             .or_insert_with(MovePossibility::all)
                             .left = false;
-                    } 
+                    }
                 },
             }})
     }

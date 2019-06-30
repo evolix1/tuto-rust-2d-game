@@ -1,4 +1,4 @@
-use crate::positionning::Pos;
+use crate::positionning::LogicalPos;
 
 
 /// Robot identity (designated by color, like ghost in pacman)
@@ -14,7 +14,7 @@ pub enum RobotId {
 #[derive(Debug)]
 pub struct Robot {
     pub id: RobotId,
-    pub pos: Option<Pos>
+    pub pos: Option<LogicalPos>
 }
 
 

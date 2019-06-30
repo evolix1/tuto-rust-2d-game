@@ -1,4 +1,4 @@
-use crate::positionning::{Pos, Way, Hit, SideLength};
+use crate::positionning::{LogicalPos, PosExtra, Way, Hit, SideLength};
 use crate::moves::MovePossibility;
 use crate::wall::{Wall, Side};
 
@@ -22,8 +22,8 @@ impl BoardByIndirectTable {
         let walls_to_move_on_y = Vec::new();
 
         BoardByIndirectTable {
-            walls_to_move_on_x, 
-            walls_to_move_on_y 
+            walls_to_move_on_x,
+            walls_to_move_on_y
         }
     }
 
@@ -31,19 +31,19 @@ impl BoardByIndirectTable {
     fn column_at(&self, x: usize) -> Result<&Vec<usize>> {
         self.walls_to_move_on_y
             .get(x)
-            .ok_or_else(|| self.oob_error(Pos::new(x, 0)))
+            .ok_or_else(|| self.oob_error(LogicalPos{ x, y: 0 }))
     }
 
 
     fn row_at(&self, y: usize) -> Result<&Vec<usize>> {
         self.walls_to_move_on_x
             .get(y)
-            .ok_or_else(|| self.oob_error(Pos::new(0, y)))
+            .ok_or_else(|| self.oob_error(LogicalPos{ x: 0, y }))
     }
 
 
     fn mut_column_at(&mut self, x: usize) -> Result<&mut Vec<usize>> {
-        let err = self.oob_error(Pos::new(x, 0));
+        let err = self.oob_error(LogicalPos{ x, y: 0 });
         self.walls_to_move_on_y
             .get_mut(x)
             .ok_or(err)
@@ -51,7 +51,7 @@ impl BoardByIndirectTable {
 
 
     fn mut_row_at(&mut self, y: usize) -> Result<&mut Vec<usize>> {
-        let err = self.oob_error(Pos::new(0, y));
+        let err = self.oob_error(LogicalPos{ x: 0, y });
         self.walls_to_move_on_x
             .get_mut(y)
             .ok_or(err)
@@ -75,12 +75,12 @@ impl Board for BoardByIndirectTable {
         SideLength(self.row_count())
     }
 
-    fn is_start_pos(&self, _pos: &Pos) -> Result<bool> {
+    fn is_start_pos(&self, _pos: &LogicalPos) -> Result<bool> {
         Ok(true)
     }
 
 
-    fn moves_from(&self, start: &Pos) -> Result<MovePossibility> {
+    fn moves_from(&self, start: &LogicalPos) -> Result<MovePossibility> {
         let mut moves = MovePossibility::none();
 
         {
@@ -99,7 +99,7 @@ impl Board for BoardByIndirectTable {
     }
 
 
-    fn hit_from(&self, start: &Pos, way: Way) -> Result<Hit> {
+    fn hit_from(&self, start: &LogicalPos, way: Way) -> Result<Hit> {
         let edge = self.side_hit(start, way)?;
 
         let wall_pos = match way {
@@ -108,28 +108,28 @@ impl Board for BoardByIndirectTable {
                     .iter()
                     .filter(|&wall| wall < &start.y)
                     .max()
-                    .map(|&wall| Pos::new(start.x, wall + 1))
+                    .map(|&wall| LogicalPos{ x: start.x, y: wall + 1 })
             },
             Way::Down => {
                 self.column_at(start.x)?
                     .iter()
                     .filter(|&wall| wall >= &start.y)
                     .min()
-                    .map(|&wall| Pos::new(start.x, wall))
+                    .map(|&wall| LogicalPos{ x: start.x, y: wall })
             },
             Way::Left => {
                 self.row_at(start.y)?
                     .iter()
                     .filter(|&wall| wall < &start.x)
                     .max()
-                    .map(|&wall| Pos::new(wall + 1, start.y))
+                    .map(|&wall| LogicalPos{ x: wall + 1, y: start.y })
             },
             Way::Right => {
                 self.row_at(start.y)?
                     .iter()
                     .filter(|&wall| wall >= &start.x)
                     .min()
-                    .map(|&wall| Pos::new(wall, start.y))
+                    .map(|&wall| LogicalPos{ x: wall, y: start.y })
             },
         };
 
@@ -151,7 +151,7 @@ impl EditableBoard for BoardByIndirectTable {
             self.walls_to_move_on_x = (0..side).map(|_| Vec::new()).collect();
             self.walls_to_move_on_y = (0..side).map(|_| Vec::new()).collect();
             Ok(())
-        } 
+        }
         else {
             Err(Error::DimensionsNotSuitableForBoard)
         }
@@ -170,7 +170,7 @@ impl EditableBoard for BoardByIndirectTable {
                     Side::Down => {
                         if wall.pos.y + 1 != self.row_count() {
                             self.mut_column_at(wall.pos.x)?.push(wall.pos.y);
-                        } 
+                        }
                     },
                     Side::Left => {
                         if wall.pos.x != 0 {
@@ -180,7 +180,7 @@ impl EditableBoard for BoardByIndirectTable {
                     Side::Right => {
                         if wall.pos.x + 1 != self.column_count() {
                             self.mut_row_at(wall.pos.y)?.push(wall.pos.x);
-                        } 
+                        }
                     },
                 }
 

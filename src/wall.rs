@@ -1,4 +1,4 @@
-use crate::positionning::{Pos, RotateAngle};
+use crate::positionning::{LogicalPos, RotateAngle};
 
 
 // Enum variants on type aliases are still experimental.
@@ -8,6 +8,6 @@ impl_way!(Side);
 
 #[derive(Debug, Clone)]
 pub struct Wall {
-    pub pos: Pos,
+    pub pos: LogicalPos,
     pub side: Side
 }

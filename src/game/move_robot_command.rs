@@ -1,5 +1,5 @@
 use crate::robot::RobotId;
-use crate::positionning::Pos;
+use crate::positionning::LogicalPos;
 
 use super::Game;
 use super::command::{Command, CommandBase, CommandResult};
@@ -8,13 +8,13 @@ use super::command::{Command, CommandBase, CommandResult};
 #[derive(Debug, Clone)]
 pub struct MoveRobotCommand {
     robot: RobotId,
-    source_pos: Pos,
-    target_pos: Pos,
+    source_pos: LogicalPos,
+    target_pos: LogicalPos,
 }
 
 
 impl MoveRobotCommand {
-    pub fn new(robot: RobotId, source_pos: Pos, target_pos: Pos) -> MoveRobotCommand {
+    pub fn new(robot: RobotId, source_pos: LogicalPos, target_pos: LogicalPos) -> MoveRobotCommand {
         MoveRobotCommand {
             robot,
             source_pos,
