@@ -30,13 +30,16 @@ impl From<&Robot> for RobotState {
 
 
 impl World {
-    pub fn new(game_state: &GameState) -> World {
-        let robots = game_state.robots.iter()
+    pub fn new() -> World {
+        World {
+            robots: Vec::new(),
+        }
+    }
+
+
+    pub fn reset(&mut self, game_state: &GameState) {
+        self.robots = game_state.robots.iter()
             .map(|robot| robot.into())
             .collect();
-
-        World {
-            robots,
-        }
     }
 }

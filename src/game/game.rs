@@ -19,11 +19,9 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Game {
-        let state = GameState::new();
-        let world = World::new(&state);
         Game {
-            state,
-            world,
+            state: GameState::new(),
+            world: World::new(),
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),
             animation: None,
@@ -109,6 +107,7 @@ impl Game {
     pub fn reset_rand_pos(&mut self) {
         self.clear_undo_stack();
         self.state.reset_rand_pos();
+        self.world.reset(&self.state);
     }
 
 

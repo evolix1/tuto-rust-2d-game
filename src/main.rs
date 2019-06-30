@@ -54,7 +54,7 @@ fn main() -> Result<(), String> {
 
     let board_builder = board::Builder::new(&config);
     board_builder.build_on(&mut game.state);
-    game.state.reset_rand_pos();
+    game.reset_rand_pos();
 
     let mut kb_controller = game::KeyboardController::new();
 
@@ -104,10 +104,10 @@ fn main() -> Result<(), String> {
         let elapsed = frame_time.duration_since(time).as_micros() as f32 * 0.000001;
 
         game.update_animation(elapsed);
-        renderer.render(&game.state)?;
+        renderer.render(game.state.board.as_ref(), &game.world)?;
 
         time = frame_time;
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 20));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 
     Ok(())
