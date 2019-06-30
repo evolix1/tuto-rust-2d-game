@@ -124,7 +124,12 @@ impl Game {
 
     pub fn update_animation(&mut self, elapsed: f32) {
         if let Some(mut animation) = self.animation.take() {
-            let robot = &mut self.world.robots[0]; // TODO
+            let robot_index = match self.state.robot_index(animation.robot_id) {
+                Some(index) => { index },
+                None => { return; }
+            };
+            let robot = &mut self.world.robots[robot_index];
+
             animation.time += elapsed;
             if animation.time < animation.duration {
                 let t = animation.time / animation.duration;

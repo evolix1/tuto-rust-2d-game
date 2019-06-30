@@ -41,6 +41,14 @@ impl GameState {
     }
 
 
+    pub fn robot_index(&self, robot_id: RobotId) -> Option<usize> {
+        self.robots.iter()
+            .enumerate()
+            .find(|ref index_robot| index_robot.1.id == robot_id)
+            .map(|index_robot| index_robot.0)
+    }
+
+
     pub fn robot(&self, robot_id: RobotId) -> Option<&Robot> {
         self.robots.iter()
             .find(|ref robot| robot.id == robot_id)
