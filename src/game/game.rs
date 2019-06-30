@@ -1,4 +1,6 @@
-use crate::positionning::{LogicalPos, Way};
+use cgmath::prelude::*;
+
+use crate::positionning::{LogicalPos, Way, physical_from_logical};
 
 use super::robot::RobotId;
 use super::game_state::GameState;
@@ -118,7 +120,12 @@ impl Game {
         target_pos: &LogicalPos
     ) {
         assert!(self.animation.is_none());
-        self.animation = Some(Animation::new(robot, source_pos, target_pos, 1f32));
+
+        let source_pos = physical_from_logical(source_pos);
+        let target_pos = physical_from_logical(target_pos);
+        let duration = 0.04 * source_pos.distance(target_pos);
+
+        self.animation = Some(Animation::new(robot, source_pos, target_pos, duration));
     }
 
 
@@ -134,7 +141,7 @@ impl Game {
             if animation.time < animation.duration {
                 let t = animation.time / animation.duration;
                 robot.pos = Some(
-                    (1f32 - t) * animation.source_pos + t * animation.target_pos
+                    animation.source_pos.lerp(animation.target_pos, t)
                 );
                 self.animation = Some(animation);
             }

@@ -1,4 +1,4 @@
-use crate::positionning::{LogicalPos, PhysicalPos, physical_from_logical};
+use crate::positionning::PhysicalPos;
 
 use super::robot::RobotId;
 
@@ -15,13 +15,13 @@ pub struct Animation {
 impl Animation {
     pub fn new(
             robot_id: RobotId,
-            source_pos: &LogicalPos,
-            target_pos: &LogicalPos,
+            source_pos: PhysicalPos,
+            target_pos: PhysicalPos,
             duration: f32) -> Animation {
         Animation {
             robot_id,
-            source_pos: physical_from_logical(source_pos),
-            target_pos: physical_from_logical(target_pos),
+            source_pos,
+            target_pos,
             time: 0f32,
             duration,
         }
