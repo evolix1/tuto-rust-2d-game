@@ -1,8 +1,9 @@
 use sdl2::rect::Rect;
 
-use crate::world::GameWorld;
 use crate::positionning::{LogicalPos, RotateAngle, FlipAxis};
 use crate::moves::MovePossibility;
+use crate::board::EditableBoard;
+use crate::game::World;
 
 use super::error::*;
 use super::draw::DrawContext;
@@ -23,21 +24,21 @@ impl<'r> Renderer<'r> {
     }
 
 
-    pub fn render(&mut self, world: &GameWorld) -> Result<()> {
-        self.prepare(world)?;
-        self.render_all(world)?;
+    pub fn render(&mut self, board: &EditableBoard, world: &World) -> Result<()> {
+        self.prepare(board)?;
+        self.render_all(board, world)?;
         self.draw_ctx.canvas.present();
         Ok(())
     }
 
 
-    fn prepare(&mut self, world: &GameWorld) -> Result<()> {
+    fn prepare(&mut self, board: &EditableBoard) -> Result<()> {
         self.draw_ctx.canvas.set_draw_color(self.settings.background_color);
         self.draw_ctx.canvas.clear();
 
         // Initialise the first time only - or when board changes
         if !self.draw_ctx.tm.borrow().sprite_exists(&SpriteId::CurrentBoard) {
-            self.init_board(world)?;
+            self.init_board(board)?;
         }
 
         Ok(())
@@ -51,7 +52,7 @@ impl<'r> Renderer<'r> {
     /**
      * Render all game items.
      */
-    pub fn render_all(&mut self, world: &GameWorld) -> Result<()>
+    pub fn render_all(&mut self, board: &EditableBoard, world: &World) -> Result<()>
     {
         let (width, height) = self.draw_ctx.canvas.output_size()?;
         let geom = Rect::new(10, 10, width - 20, height - 20);
@@ -62,7 +63,7 @@ impl<'r> Renderer<'r> {
             geom,
             AspectRatio::KeepIn)?;
 
-        let side = world.board.side_length().0;
+        let side = board.side_length().0;
         let side_f = side as f32;
 
         // Then, draw robots
@@ -72,8 +73,8 @@ impl<'r> Renderer<'r> {
                 None => continue
             };
 
-            let x = pos.x as f32 * board_rect.width() as f32 / side_f;
-            let y = pos.y as f32 * board_rect.height() as f32 / side_f;
+            let x = pos.x * board_rect.width() as f32 / side_f;
+            let y = pos.y * board_rect.height() as f32 / side_f;
 
             let screen_rect = Rect::new(
                 board_rect.x() + x.floor() as i32,
@@ -124,11 +125,11 @@ impl<'r> Renderer<'r> {
     }
 
 
-    fn init_board(&mut self, world: &GameWorld) -> Result<()> {
+    fn init_board(&mut self, board: &EditableBoard) -> Result<()> {
         let (format, width, height);
 
         {
-            let side = world.board.side_length().0 as u32;
+            let side = board.side_length().0 as u32;
             let tm = self.draw_ctx.tm.borrow();
             let board_cell = tm.get_sprite(&SpriteId::CellBackground)?;
             format = tm.get_texture(board_cell)?.query().format;
@@ -142,7 +143,7 @@ impl<'r> Renderer<'r> {
             SpriteId::CurrentBoard,
             format, width, height,
             |ctx| {
-                Self::draw_board(ctx, world, draw_walls_on_edge)
+                Self::draw_board(ctx, board, draw_walls_on_edge)
             })?;
 
         Ok(())
@@ -151,13 +152,13 @@ impl<'r> Renderer<'r> {
 
     fn draw_board<'c, 't>(
         draw_ctx: &mut DrawContext<'c, 't>,
-        world: &GameWorld,
+        board: &EditableBoard,
         draw_walls_on_edge: bool
         ) -> Result<()>
         {
             let sprite_id = SpriteId::CellBackground;
 
-            let side = world.board.side_length().0;
+            let side = board.side_length().0;
             let side_f = side as f32;
 
             let (width, height) = draw_ctx.canvas
@@ -181,7 +182,7 @@ impl<'r> Renderer<'r> {
                         (next_x - px) as u32,
                         (next_y - py) as u32);
 
-                    let mut moves = world.board
+                    let mut moves = board
                         .moves_from(&LogicalPos{ x, y })
                         .unwrap_or_else(|_| MovePossibility::all());
 

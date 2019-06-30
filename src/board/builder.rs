@@ -3,7 +3,7 @@ use std::rc::Rc;
 use rand::seq::SliceRandom;
 
 use crate::config::AppConfig;
-use crate::world::GameWorld;
+use crate::game::GameState;
 
 
 pub struct Builder {
@@ -17,8 +17,8 @@ impl Builder {
         Builder{ config }
     }
 
-    
-    pub fn build_on(&self, world: &mut GameWorld) {
+
+    pub fn build_on(&self, world: &mut GameState) {
         world.board.reset(&self.config.board_side_length)
             .expect("valid dimension");
 

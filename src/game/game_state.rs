@@ -1,5 +1,6 @@
-use crate::robot::{Robot, RobotId};
 use crate::positionning::{LogicalPos, PosExtra, Way};
+
+use super::robot::{Robot, RobotId};
 
 #[allow(unused_imports)]
 use crate::board::{
@@ -9,9 +10,9 @@ use crate::board::{
 };
 
 
-pub struct GameWorld {
+pub struct GameState {
     pub board: Box<dyn EditableBoard>,
-    pub robots: [Robot; 4],
+    pub robots: Vec<Robot>,
 }
 
 
@@ -21,22 +22,30 @@ pub enum InvalidCommand {
 }
 
 
-impl GameWorld {
-    pub fn new() -> GameWorld {
+impl GameState {
+    pub fn new() -> GameState {
         let board = Box::new(BoardByIndirectTable::new());
         //let board = Box::new(BoardByIndividualCells::new());
 
-        let robots = [
+        let robots = vec![
             Robot::new(RobotId::Red),
             Robot::new(RobotId::Green),
             Robot::new(RobotId::Blue),
             Robot::new(RobotId::Yellow),
         ];
 
-        GameWorld {
+        GameState {
             board,
             robots
         }
+    }
+
+
+    pub fn robot_index(&self, robot_id: RobotId) -> Option<usize> {
+        self.robots.iter()
+            .enumerate()
+            .find(|ref index_robot| index_robot.1.id == robot_id)
+            .map(|index_robot| index_robot.0)
     }
 
 

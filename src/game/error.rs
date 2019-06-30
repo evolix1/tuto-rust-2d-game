@@ -12,5 +12,10 @@ error_chain! {
             description("robot has no position"),
             display("robot has no position"),
         }
+
+        CannotMoveRobotDuringAnimation {
+            description("cannot move robot during animation"),
+            display("cannot move robot during animation"),
+        }
     }
 }
