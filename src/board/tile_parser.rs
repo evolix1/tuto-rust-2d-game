@@ -34,21 +34,39 @@ impl<'a> TileParser<'a> {
             match *item as char {
                 '.' => {
                     if row >= side {
-                        bail!(ErrorKind::TooLargeContent(side));
+                        bail!(ErrorKind::TooLargeContent(side, text.clone()));
                     }
 
                     column += 1;
-                    if column == side {
-                        column = 0;
+                    if column > side {
+                        column = 1;
                         row += 1;
                     }
                 },
                 '|' => {
+                    if column <= 0 {
+                        bail!(ErrorKind::UnexpectedToken(
+                                '|', 
+                                vec!["cell".into()], 
+                                column, 
+                                row, 
+                                text.clone()));
+                    }
+
                     let pos = LogicalPos{ x: column - 1, y: row };
                     let side = Side::Right;
                     walls.push(Wall{ pos, side });
                 },
                 '_' => {
+                    if column <= 0 {
+                        bail!(ErrorKind::UnexpectedToken(
+                                '|', 
+                                vec!["cell".into()], 
+                                column, 
+                                row, 
+                                text.clone()));
+                    }
+
                     let pos = LogicalPos{ x: column - 1, y: row };
                     let side = Side::Down;
                     walls.push(Wall{ pos, side });
@@ -61,19 +79,19 @@ impl<'a> TileParser<'a> {
                         "horizontal wall".into()];
 
                     bail!(ErrorKind::UnexpectedToken(
-                        unexpected, expected, column, row
+                        unexpected, expected, column, row, text.clone()
                     ));
                 },
             }
         }
 
-        if row == side && column == 0 {
+        if row + 1 == side && column == side {
             Ok(Tile::new(walls))
         }
         // missing some rows
         else if row < side {
             let missing = side - row;
-            bail!(ErrorKind::MissingRows(row, missing))
+            bail!(ErrorKind::MissingRows(row, missing, text.clone()))
         }
         else {
             unreachable!("too large content error should have been returned earlier");

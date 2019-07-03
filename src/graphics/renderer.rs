@@ -197,8 +197,15 @@ impl<'r> Renderer<'r> {
                     }
 
 
+                    let flip = 
+                        if (x + y) % 2 == 0 { FlipAxis::NoFlip }
+                        else { FlipAxis::FlipHorizontal };
+
+
                     // base (background)
-                    draw_ctx.draw(&sprite_id, geom)?;
+                    draw_ctx.draw_transform(
+                        &sprite_id, geom, 
+                        RotateAngle::NoTurn, flip)?;
 
 
                     // Walls between cells
