@@ -1,4 +1,4 @@
-use crate::wall::Wall;
+use crate::wall::{Wall, Side};
 
 use crate::positionning::{LogicalPos, RotateAngle, SideLength};
 
@@ -8,14 +8,17 @@ use super::border::Border;
 
 
 #[derive(Debug, Default)]
-pub struct Tile(Vec<Wall>);
+pub struct Tile{
+    walls: Vec<Wall>, 
+    forbidden: Vec<LogicalPos>
+}
 
 
 impl Tile {
     // NOTE: By default, tile are considered to be `Border::TopLeft`.
 
-    pub fn new(wall: Vec<Wall>) -> Tile {
-        Tile(wall)
+    pub fn new(walls: Vec<Wall>, forbidden: Vec<LogicalPos>) -> Tile {
+        Tile { walls, forbidden }
     }
 
     pub fn apply_on<T>(&self, board: &mut T, border: &Border) -> Result<()>
@@ -23,11 +26,24 @@ impl Tile {
     {
         let board = board.as_mut();
 
-        for wall in self.0.iter() {
-            let wall = Self::situate_on_board(wall, border, &board.side_length());
-            // TODO: better handling
+        for wall in self.walls.iter() {
+            let wall = Self::situate_on_board(
+                wall, 
+                border, 
+                &board.side_length());
+            
             board.put_wall(&wall)
                 .expect("board can put a wall at given position");
+        }
+
+        for pos in self.forbidden.iter() {
+            let correct_pos = Self::situate_on_board(
+                &Wall { pos: pos.clone(), side: Side::Left }, 
+                border, 
+                &board.side_length()).pos;
+            
+            board.forbid_cell(&correct_pos)
+                .expect("board can forbid cell at given position");
         }
 
         Ok(())

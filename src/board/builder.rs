@@ -19,11 +19,11 @@ impl Builder {
 
 
     pub fn build_on(&self, world: &mut GameState) {
-        world.board.reset(&self.config.board_side_length)
+        world.board
+            .reset(&self.config.board_side_length)
             .expect("valid dimension");
 
         // TODO error handling
-        // TODO find tile sets compatible with `dim`
         let mut rng = rand::thread_rng();
         let tile_set = self.config.tile_sets.choose(&mut rng)
             .expect("config has at least one tile sets");

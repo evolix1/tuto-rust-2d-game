@@ -6,35 +6,33 @@ use super::tile::Tile;
 
 
 pub struct TileParser<'a> {
-    texts: &'a Vec<String>,
+    text: &'a String,
 }
 
 
 impl<'a> TileParser<'a> {
-    pub fn new(texts: &'a Vec<String>) -> TileParser<'a> {
-        TileParser { texts }
+    pub fn new(text: &'a String) -> TileParser<'a> {
+        TileParser { text }
     }
 
 
-    // NOTE: make it an actual iterator
-    pub fn parse_all(&mut self, side_length: &SideLength) -> Result<Vec<Tile>> {
-        self.texts.iter()
-            .map(|text| Self::parse(side_length, text))
-            .collect::<Result<_>>()
-    }
-
-    pub fn parse(side_length: &SideLength, text: &String) -> Result<Tile> {
+    pub fn parse(&self, side_length: &SideLength) -> Result<Tile> {
         let side = side_length.0;
 
         let mut walls = Vec::new();
+        let mut forbidden = Vec::new();
         let mut row = 0;
         let mut column = 0;
+                                
+        let expected_cells = vec![
+            "free cell".into(), 
+            "forbidden cell".into()];
 
-        for item in text.as_bytes() {
+        for item in self.text.as_bytes() {
             match *item as char {
-                '.' => {
+                '#' | '.' => {
                     if row >= side {
-                        bail!(ErrorKind::TooLargeContent(side, text.clone()));
+                        bail!(ErrorKind::TooLargeContent(side, self.text.clone()));
                     }
 
                     column += 1;
@@ -42,15 +40,17 @@ impl<'a> TileParser<'a> {
                         column = 1;
                         row += 1;
                     }
+
+                    if *item as char == '#' {
+                        let pos = LogicalPos{ x: column - 1, y: row };
+                        forbidden.push(pos);
+                    }
                 },
                 '|' => {
                     if column <= 0 {
                         bail!(ErrorKind::UnexpectedToken(
-                                '|', 
-                                vec!["cell".into()], 
-                                column, 
-                                row, 
-                                text.clone()));
+                                '|', expected_cells,
+                                column, row, self.text.clone()));
                     }
 
                     let pos = LogicalPos{ x: column - 1, y: row };
@@ -60,11 +60,8 @@ impl<'a> TileParser<'a> {
                 '_' => {
                     if column <= 0 {
                         bail!(ErrorKind::UnexpectedToken(
-                                '|', 
-                                vec!["cell".into()], 
-                                column, 
-                                row, 
-                                text.clone()));
+                                '_', expected_cells,
+                                column, row, self.text.clone()));
                     }
 
                     let pos = LogicalPos{ x: column - 1, y: row };
@@ -79,19 +76,19 @@ impl<'a> TileParser<'a> {
                         "horizontal wall".into()];
 
                     bail!(ErrorKind::UnexpectedToken(
-                        unexpected, expected, column, row, text.clone()
+                        unexpected, expected, column, row, self.text.clone()
                     ));
                 },
             }
         }
 
         if row + 1 == side && column == side {
-            Ok(Tile::new(walls))
+            Ok(Tile::new(walls, forbidden))
         }
         // missing some rows
         else if row < side {
             let missing = side - row;
-            bail!(ErrorKind::MissingRows(row, missing, text.clone()))
+            bail!(ErrorKind::MissingRows(row, missing, self.text.clone()))
         }
         else {
             unreachable!("too large content error should have been returned earlier");

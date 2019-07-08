@@ -5,12 +5,13 @@ use crate::game::RobotId;
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub enum SpriteId {
-    // Board management
+    // 
     CellBackground,
-    CurrentBoard,
-    // Corner overlay
+    ForbiddenCell,
     CornerWall,
     SideWall,
+    //
+    CurrentBoard,
     //
     Robot(RobotId),
 }

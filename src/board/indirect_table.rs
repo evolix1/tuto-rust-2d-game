@@ -95,6 +95,8 @@ impl Board for BoardByIndirectTable {
             moves.down = start.y + 1 < self.row_count() && !column.contains(&start.y);
         }
 
+        moves.forbidden = !(moves.left | moves.right | moves.up | moves.down);
+
         Ok(moves)
     }
 

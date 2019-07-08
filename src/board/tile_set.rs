@@ -23,9 +23,19 @@ pub struct TileSet {
 
 impl TileSet {
     pub fn parse(&mut self) -> Result<()> {
-        self.tiles = TileParser::new(&self.raw_tiles)
-            .parse_all(&self.side_length)?;
+        self.tiles = self.raw_tiles
+            .iter()
+            .enumerate()
+            .map(|(i, tile)| TileParser::new(tile)
+                 .parse(&self.side_length)
+                 .map_err(|parse_error| {
+                     let err: Error = parse_error.into();
+                     err.chain_err(|| ErrorKind::InvalidTileFormat(self.name.clone(), i))
+                 }))
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        
         println!("tiles {:?}", self.tiles);
+        
         Ok(())
     }
 

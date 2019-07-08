@@ -156,8 +156,6 @@ impl<'r> Renderer<'r> {
         draw_walls_on_edge: bool
         ) -> Result<()>
         {
-            let sprite_id = SpriteId::CellBackground;
-
             let side = board.side_length().0;
             let side_f = side as f32;
 
@@ -186,6 +184,11 @@ impl<'r> Renderer<'r> {
                         .moves_from(&LogicalPos{ x, y })
                         .unwrap_or_else(|_| MovePossibility::all());
 
+                    if moves.forbidden {
+                        draw_ctx.draw(&SpriteId::ForbiddenCell, geom)?;
+                        continue;
+                    }
+
                     // If we don't have to paint walls next to an edge,
                     // This will simply re-enable moves, like if the user could
                     // move through it.
@@ -204,7 +207,7 @@ impl<'r> Renderer<'r> {
 
                     // base (background)
                     draw_ctx.draw_transform(
-                        &sprite_id, geom, 
+                        &SpriteId::CellBackground, geom, 
                         RotateAngle::NoTurn, flip)?;
 
 

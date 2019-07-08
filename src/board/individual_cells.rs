@@ -51,6 +51,8 @@ impl Board for BoardByIndividualCells {
                 moves.down &= start.y + 1 < self.side_length.0;
                 moves.left &= start.x > 0;
                 moves.right &= start.x + 1 < self.side_length.0;
+                
+                moves.forbidden = !(moves.left | moves.right | moves.up | moves.down);
 
                 moves
             })

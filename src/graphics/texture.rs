@@ -56,6 +56,7 @@ impl<'t> TextureManager<'t> {
             SpriteId::CellBackground,
             SpriteId::CornerWall,
             SpriteId::SideWall,
+            SpriteId::ForbiddenCell,
         ];
 
         for (i, id) in ids.into_iter().enumerate() {

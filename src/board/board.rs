@@ -1,6 +1,6 @@
 use crate::positionning::{LogicalPos, PosExtra, Way, Hit, SideLength};
 use crate::moves::MovePossibility;
-use crate::wall::Wall;
+use crate::wall::{Wall, Side};
 
 use super::error::*;
 
@@ -15,7 +15,10 @@ pub trait Board {
     }
 
     // Test whether the given position can be used to start a robot on.
-    fn is_start_pos(&self, pos: &LogicalPos) -> Result<bool>;
+    fn is_start_pos(&self, pos: &LogicalPos) -> Result<bool> {
+        self.moves_from(pos)
+            .map(|moves| !moves.forbidden)
+    }
 
     // Evaluate what actions can be done at given position.
     fn moves_from(&self, start: &LogicalPos) -> Result<MovePossibility>;
@@ -58,4 +61,30 @@ pub trait EditableBoard: Board {
     fn reset(&mut self, side_length: &SideLength) -> Result<()>;
 
     fn put_wall(&mut self, wall: &Wall) -> Result<()>;
+    
+    fn forbid_cell(&mut self, pos: &LogicalPos) -> Result<()> {
+        let side = self.side_length().0;
+        
+        if pos.y > 0 {
+            let top_pos = LogicalPos{ y: pos.y - 1, ..*pos };
+            self.put_wall(&Wall { pos: top_pos, side: Side::Down })?;
+        }
+        
+        if pos.y + 1 < side {
+            let bottom_pos = LogicalPos{ y: pos.y + 1, ..*pos };
+            self.put_wall(&Wall { pos: bottom_pos, side: Side::Up })?;
+        }
+        
+        if pos.x > 0 {
+            let left_pos = LogicalPos{ x: pos.x - 1, ..*pos };
+            self.put_wall(&Wall { pos: left_pos, side: Side::Right })?;
+        }
+        
+        if pos.x + 1 < side {
+            let right_pos = LogicalPos{ x: pos.x + 1, ..*pos };
+            self.put_wall(&Wall { pos: right_pos, side: Side::Left })?;
+        }
+
+        Ok(())
+    }
 }

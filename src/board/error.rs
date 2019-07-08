@@ -21,6 +21,11 @@ error_chain! {
             display("robot has no position"),
         }
 
+        InvalidTileFormat(tile_set_name: String, tile_index: usize) {
+            description("invalid tile format"),
+            display("invalid tile #{} of tile set '{}'", tile_index, tile_set_name),
+        }
+
         OutOfBoardPosition(pos: LogicalPos, side_length: SideLength) {
             description("out-of-board position"),
             display("out-of-board position {0:?} (board={1}x{1})", pos, side_length),
