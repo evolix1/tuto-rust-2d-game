@@ -6,6 +6,7 @@
     assets_path: "../../../assets/all.png",
     side_length: 16,
     tiles: [{
+        name: "official",
         side_length: 8,
         sets: [
 // 23_4033

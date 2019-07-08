@@ -1,6 +1,6 @@
 use serde_derive::Deserialize;
 
-use rand::seq::SliceRandom;
+use rand::Rng;
 
 use crate::positionning::SideLength;
 use crate::board::{EditableBoard, Border};
@@ -13,6 +13,7 @@ use super::tile::Tile;
 #[derive(Debug, Deserialize)]
 pub struct TileSet {
     pub side_length: SideLength,
+    pub name: String,
     #[serde(rename = "sets")]
     raw_tiles: Vec<String>,
     #[serde(default, skip)]
@@ -34,10 +35,16 @@ impl TileSet {
     {
         let mut rng = rand::thread_rng();
 
+        if self.tiles.is_empty() {
+            bail!(ErrorKind::EmptyTileSet);
+        }
+
         for border in Border::all() {
-            let _ = self.tiles.choose(&mut rng)
-                .ok_or_else(|| ErrorKind::EmptyTileSet)
-                .map(|tile| tile.apply_on(board, border))?;
+            let i = rng.gen_range(0, self.tiles.len());
+
+            println!("Put tile '{}':{} on {} border", self.name, i, border);
+
+            self.tiles[i].apply_on(board, border)?;
         }
 
         Ok(())
