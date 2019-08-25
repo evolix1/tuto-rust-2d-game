@@ -39,7 +39,7 @@ impl Game {
         -> Result<bool> {
         let source_pos = self.state
             .robot_pos(robot)
-            .ok_or_else(|| ErrorKind::RobotHasNoPosition)?;
+            .ok_or(ErrorKind::RobotHasNoPosition)?;
         let target_pos = self.state.cast_ray(&source_pos, way);
 
         if target_pos != source_pos {
