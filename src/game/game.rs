@@ -120,7 +120,7 @@ impl Game {
         source_pos: &LogicalPos,
         target_pos: &LogicalPos
     ) {
-        assert!(self.animation.is_none());
+        //assert!(self.animation.is_none());
 
         let source_pos = physical_from_logical(source_pos);
         let target_pos = physical_from_logical(target_pos);
