@@ -8,7 +8,11 @@ use super::game_state::GameState;
 use super::world::World;
 use super::command::Command;
 use super::move_robot_command::MoveRobotCommand;
-use super::animation::Animation;
+use super::animation::{
+    Animation,
+    MoveRobotAnimation,
+    AnimationSequence,
+};
 
 
 pub struct Game {
@@ -16,7 +20,7 @@ pub struct Game {
     pub world: World,
     undo_stack: Vec<Box<dyn Command>>,
     redo_stack: Vec<Box<dyn Command>>,
-    animation: Option<Animation>,
+    animation: Option<AnimationSequence>,
 }
 
 
@@ -120,34 +124,31 @@ impl Game {
         source_pos: &LogicalPos,
         target_pos: &LogicalPos
     ) {
-        //assert!(self.animation.is_none());
+        let mut animation = match self.animation.take() {
+            Some(animation) => { animation }
+            None => { AnimationSequence::new() }
+        };
 
         let source_pos = physical_from_logical(source_pos);
         let target_pos = physical_from_logical(target_pos);
         let duration = 0.04 * source_pos.distance(target_pos);
 
-        self.animation = Some(Animation::new(robot, source_pos, target_pos, duration));
+        animation.add_animation(
+            Box::new(
+                MoveRobotAnimation::new(
+                    robot, source_pos, target_pos, duration
+                )
+            )
+        );
+
+        self.animation = Some(animation);
     }
 
 
     pub fn update_animation(&mut self, elapsed: f32) {
         if let Some(mut animation) = self.animation.take() {
-            let robot_index = match self.state.robot_index(animation.robot_id) {
-                Some(index) => { index },
-                None => { return; }
-            };
-            let robot = &mut self.world.robots[robot_index];
-
-            animation.time += elapsed;
-            if animation.time < animation.duration {
-                let t = animation.time / animation.duration;
-                robot.pos = Some(
-                    animation.source_pos.lerp(animation.target_pos, t)
-                );
+            if animation.render(&self.state, &mut self.world, elapsed) {
                 self.animation = Some(animation);
-            }
-            else {
-                robot.pos = Some(animation.target_pos);
             }
         }
     }
