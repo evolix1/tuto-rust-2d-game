@@ -122,7 +122,8 @@ impl Animation for AnimationSequence {
         let mut remaining = elapsed;
         while self.current_animation < self.animations.len()
         && self.animations[self.current_animation].get_time() + remaining >= self.animations[self.current_animation].get_duration() {
-            let animation = &self.animations[self.current_animation];
+            let animation = &mut self.animations[self.current_animation];
+            animation.render(state, world, remaining);
             remaining -= animation.get_duration() - animation.get_time();
             self.current_animation += 1;
         }

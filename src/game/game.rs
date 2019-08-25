@@ -21,6 +21,7 @@ pub struct Game {
     undo_stack: Vec<Box<dyn Command>>,
     redo_stack: Vec<Box<dyn Command>>,
     animation: Option<AnimationSequence>,
+    animation_speed: f32,
 }
 
 
@@ -32,6 +33,7 @@ impl Game {
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),
             animation: None,
+            animation_speed: 1.0f32,
         }
     }
 
@@ -136,6 +138,7 @@ impl Game {
                 )
             )
         );
+        self.animation_speed = (animation.get_duration() - animation.get_time()).sqrt();
 
         self.animation = Some(animation);
     }
@@ -143,7 +146,7 @@ impl Game {
 
     pub fn update_animation(&mut self, elapsed: f32) {
         if let Some(mut animation) = self.animation.take() {
-            if animation.render(&self.state, &mut self.world, elapsed) {
+            if animation.render(&self.state, &mut self.world, elapsed * self.animation_speed) {
                 self.animation = Some(animation);
             }
         }
