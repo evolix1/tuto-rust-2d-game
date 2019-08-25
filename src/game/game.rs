@@ -42,7 +42,7 @@ impl Game {
             .ok_or_else(|| ErrorKind::RobotHasNoPosition)?;
         let target_pos = self.state.cast_ray(&source_pos, way);
 
-        if target_pos != source_pos && self.animation.is_none() {
+        if target_pos != source_pos {
             self.move_robot(robot, target_pos)?;
             Ok(true)
         }
@@ -52,10 +52,6 @@ impl Game {
     }
 
     pub fn move_robot(&mut self, robot: RobotId, target_pos: LogicalPos) -> Result<()> {
-        if self.animation.is_some() {
-            bail!(ErrorKind::CannotMoveRobotDuringAnimation)
-        }
-
         let source_pos = self.state
             .robot_pos(robot)
             .ok_or_else(|| ErrorKind::RobotHasNoPosition)?;
